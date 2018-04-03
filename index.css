@@ -1,0 +1,38 @@
+body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  margin: 0 0 0.3em 0;
+}
+
+footer {
+  margin-top: 0.2em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+footer > * {
+  margin: 0.1em;
+}
+
+footer > a {
+  margin-right: 0.2em;
+}
+
+footer #more {
+  justify-self: end;
+  width: 7em;
+  margin-left: auto;
+}
+
+.github-button {
+  opacity: 0;
+}
