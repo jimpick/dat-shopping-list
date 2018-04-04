@@ -34,12 +34,22 @@ const footer = html`
 `
 
 function indexView (state, emit) {
+  const documents = state.documents.map(doc => {
+    return html`
+      <li>
+        <a href="/doc/${doc.key}">${prettyHash(doc.key)} ${doc.name}
+      </li>
+    `
+  })
   return html`
     <body>
       <h2>
         Dat Multiwriter on the Web Demo
       </h2>
       <header>
+        <ul>
+          ${documents}
+        </ul>
         <button class="bigBtn" onclick="${() => emit('pushState', '/create')}">
           Create a new document
         </button>
@@ -104,6 +114,61 @@ function docView (state, emit) {
 
 function store (state, emitter) {
   state.shoppingList = []
+  state.documents = []
+  
+  // Store documents in indexedDB
+  function openDocumentsDB (cb) {
+    const request = window.indexedDB.open('documents', 1)
+    request.onerror = function (event) {
+      console.log('IndexedDB error')
+    }
+    request.onsuccess = function (event) {
+      state.documentsDB = event.target.result
+      readDocuments(cb)
+    }
+    request.onupgradeneeded = function (event) {
+      const db = event.target.result
+      const objectStore = db.createObjectStore("documents", {keyPath: 'key'})
+      objectStore.createIndex('name', 'name')
+      objectStore.transaction.oncomplete = function (event) {
+        console.log('Document db created')
+      }
+    }
+  }
+  function writeDocumentRecord (key, name) {
+    const db = state.documentsDB
+    if (!db) return
+    const request = db.transaction('documents', 'readwrite')
+      .objectStore('documents')
+      .add({key, name})
+    request.onsuccess = function (event) {
+      readDocuments(() => {
+        console.log('documents reloaded')
+      })
+    }
+  }
+  function readDocuments (cb) {
+    const db = state.documentsDB
+    if (!db) return
+    console.log('Jim readDocuments')
+    const objectStore = db.transaction('documents').objectStore('documents')
+    const index = objectStore.index('name')
+    state.documents = []
+    index.openCursor().onsuccess = function (event) {
+      const cursor = event.target.result
+      if (cursor) {
+        state.documents.push(cursor.value)
+        cursor.continue()
+      } else {
+        cb()
+      } 
+    }
+  }
+  openDocumentsDB(() => {
+    console.log('documents loaded', state.documents)
+    emitter.emit('render')
+  })
+  
   emitter.on('createDoc', docName => {
     const {publicKey: key, secretKey} = crypto.keyPair()
     const keyHex = key.toString('hex')
@@ -117,6 +182,7 @@ function store (state, emitter) {
       let shoppingList = ['rice', 'bananas', 'kale', 'avocado', 'bread', 'quinoa', 'beer']
       writeShoppingListItems(() => {
         console.log('Done')
+        writeDocumentRecord(keyHex, docName)
         emitter.emit('pushState', `/doc/${keyHex}`)
       })
       
@@ -155,6 +221,7 @@ function store (state, emitter) {
         console.log('hyperdrive ready')
         state.key = archive.key
         state.archive = archive
+        connectToGateway(archive)
         archive.readdir('/shopping-list', (err, fileList) => {
           console.log('Shopping list files:', fileList.length)
           readShoppingListFiles(() => {
@@ -180,6 +247,29 @@ function store (state, emitter) {
           }
         })
       })
+      
+      function connectToGateway(archive) {
+        const key = archive.key.toString('hex')
+        const host = document.location.host
+        const proto = document.location.protocol === 'https:' ? 'wss' : 'ws'
+        const url = `${proto}://${host}/archive/${key}`
+        console.log('connectToGateway', key)
+
+        function connectWebsocket () {
+          console.log('Connecting websocket', url)
+          const stream = websocket(url)
+          pump(
+            stream,
+            archive.replicate({encrypt: false}),
+            stream,
+            err => {
+              console.log('Pipe finished', err.message)
+              connectWebsocket()
+            }
+          )
+        }
+        connectWebsocket()
+      }
     }
   }
 
