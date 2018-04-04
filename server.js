@@ -38,7 +38,7 @@ function attachWebsocket (server) {
     if (archives[archiveKey]) {
       archive = archives[archiveKey]
     } else {
-      archive = hyperdrive(ram, {key: archiveKey})
+      archive = hyperdrive(ram, archiveKey)
       archives[archiveKey] = archive
       archive.on('ready', () => {
         console.log('archive ready')
@@ -58,7 +58,7 @@ function attachWebsocket (server) {
           this.push(chunk)
           cb()
         }),
-        archive.replicate(),
+        archive.replicate({encrypt: false}),
         through2(function (chunk, enc, cb) {
           // console.log('To web', chunk)
           this.push(chunk)
