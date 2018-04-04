@@ -15,10 +15,13 @@ require('events').prototype._maxListeners = 100
 
 const router = express.Router()
 
-router.get('/page/:key', (req, res, next) => {
+function serveIndex (req, res, next) {
   req.url = '/index.html'
   next()
-})
+}
+
+router.get('/create', serveIndex)
+router.get('/doc/:key', serveIndex)
 
 const archives = {}
 

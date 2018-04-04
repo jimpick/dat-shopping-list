@@ -5,19 +5,33 @@ const websocket = require('websocket-stream')
 const pump = require('pump')
 const prettyHash = require('pretty-hash')
 const toBuffer = require('to-buffer')
+const hyperdrive = require('hyperdrive')
+const crypto = require('hypercore/lib/crypto')
+const newId = require('monotonic-timestamp-base36')
 const GitHubButton = require('./githubButton')
-
-require('events').prototype._maxListeners = 100
-
-const storage = rai('codemirror-multicore')
 
 const app = choo()
 app.use(store)
 app.route('/', indexView)
-// app.route('/doc/:key', mainView)
+app.route('/create', createView)
+app.route('/doc/:key', docView)
 app.mount('body')
 
 const gitHubButton = new GitHubButton()
+
+const footer = html`
+  <footer>
+    <a href="https://glitch.com/edit/#!/dat-multiwriter-web-dev">
+      <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
+            alt="view source button" aria-label="view source" height="33">
+    </a>
+    <a href="https://glitch.com/edit/#!/remix/dat-multiwriter-web-dev">
+      <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
+            alt="Remix on Glitch" />
+    </a>
+    ${gitHubButton.render()}
+  </footer>
+`
 
 function indexView (state, emit) {
   return html`
@@ -26,148 +40,149 @@ function indexView (state, emit) {
         Dat Multiwriter on the Web Demo
       </h2>
       <header>
-        <button>Create a new document</button>
+        <button class="bigBtn" onclick="${() => emit('pushState', '/create')}">
+          Create a new document
+        </button>
       </header>
-      <footer>
-        <a href="https://glitch.com/edit/#!/dat-multiwriter-web-dev">
-          <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
-                alt="view source button" aria-label="view source" height="33">
-        </a>
-        <a href="https://glitch.com/edit/#!/remix/dat-multiwriter-web-dev">
-          <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
-                alt="Remix on Glitch" />
-        </a>
-        ${gitHubButton.render()}
-      </footer>
+      <section id="content">
+      </section>
+      ${footer}
     </body>
   `
 }
 
-/*
-function mainView (state, emit) {
-  let link = html`<span class="help">Edit the HTML below, then click on "Publish" to create a new web site!</span>`
-  let webPageKey
-  let disabledNoCurrent = 'disabled'
-  if (state.currentArchive && state.currentArchive.key) {
-    webPageKey = state.currentArchive.key.toString('hex')
-    const url = `dat://${webPageKey}`
-    link = html`<a href=${url}>${url}</a>`
-    disabledNoCurrent = null
-  }
-  let found = false
-  const optionList = Object.keys(state.archives).sort().map(key => {
-    let label = prettyHash(key)
-    const title = state.archives[key].title
-    if (title) {
-      label += ` ${title}`
-    }
-    const selected = webPageKey === key ? 'selected' : ''
-    if (selected) found = true
-    return html`<option value=${key} ${selected}>${label}</option>`
-  })
-  const optGroup = optionList.length > 0 ? html`
-    <optgroup label="Load">
-      ${optionList}
-    </optgroup>` : null
-  const selectNew = found ? '' : 'selected'
+function createView (state, emit) {
   return html`
     <body>
       <h2>
-        Create a webpage on the Peer-to-Peer Web!
+        Enter name for your new document
       </h2>
-      <header>
-        <select name="docs" onchange=${selectPage}>
-          <option value="new" ${selectNew}>Create a new webpage...</option>
-          ${optGroup}
-        </select>
-        <div class="title">
-          <span>Title:</span>
-          <input id="title" name="title" value="${state.title}">
-        </div>
-        <button class="publishBtn" onclick=${() => emit('publish')}>
-          Publish
-        </button>
-        <div class="link">
-          ${link}
-        </div>
-      </header>
-      ${editor.render(state.indexHtml)}
-      <footer>
-        <a href="https://glitch.com/edit/#!/codemirror-multicore">
-          <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
-                alt="view source button" aria-label="view source" height="33">
-        </a>
-        <a href="https://glitch.com/edit/#!/remix/codemirror-multicore">
-          <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
-                alt="Remix on Glitch" />
-        </a>
-        ${gitHubButton.render()}
-        <select id="more" onchange=${selectMore}>
-          <option selected>More...</option>
-          <option ${disabledNoCurrent}>Delete</option>
-          <option ${disabledNoCurrent}>Export</option>
-        </select>
-      </footer>
+      <form onsubmit="${submit}">
+        <input id="docName" type="text">
+        <input type="submit">
+      </form>
     </body>
   `
-
-  function selectPage (e) {
-    const key = e.target.value
-    if (key === 'new') {
-      emit('pushState', `/`)
-    } else {
-      emit('pushState', `/page/${key}`)
-    }
-  }
   
-  function selectMore (e) {
-    console.log('Jim more', e.target.value)
-    switch (e.target.value) {
-      case 'Delete':
-        const ok = confirm(
-          'Delete this web page?\n\n' +
-          'This will delete the master copy in your web browser, ' +
-          'but other replicas that may have been synced will ' +
-          'still exist.'
-        )
-        if (ok) {
-          emit('delete', webPageKey)
-        }
-        break;
-      case 'Export':
-        const secretKey = state.currentArchive.metadata.secretKey.toString('hex')
-        console.log('Export', webPageKey, secretKey)
-        alert(
-          'You can export the data and the secret key to the command-line ' +
-          'dat tool. First, you need to clone the data:\n\n' +
-          `dat clone dat://${webPageKey}\n\n` +
-          'Then change directory into the new directory, and import the ' +
-          'secret key:\n\n' +
-          'dat keys import\n\n' +
-          `The secret key is:\n\n${secretKey}\n\n` +
-          'IMPORTANT: Delete your old master copy in the web browser after importing, as ' +
-          'there must only be one master copy.'
-        )
-        break;
-      case 'Settings':
-        alert('Settings')
-        break;
+  function submit (event) {
+    const docName = document.querySelector('#docName').value
+    if (docName) {
+      emit('createDoc', docName)
     }
-    e.target.selectedIndex = 0
+    
+    event.preventDefault()
   }
 }
-*/
+
+function docView (state, emit) {
+  const loading = state.loading ? html`Loading...` : null
+  const items = state.shoppingList.map(item => {
+    return html`
+      <li>
+        ${item.name}
+      </li>
+    `
+  })
+  const noItems = !state.loading && state.shoppingList.length === 0 ? html`No items.` : null
+  return html`
+    <body>
+      <h2>
+        Shopping List
+      </h2>
+      <section id="content">
+        ${loading}
+        <ul>
+          ${items}
+        </ul>
+        ${noItems}
+        <a href="/">Back to top</a>
+      </section>
+      ${footer}
+    </body>
+  `
+}
 
 function store (state, emitter) {
-  state.archives = {}
-  state.currentArchive = null
-  state.indexHtml = ''
-  state.title = ''
-
-  function debugStorage (name) {
-    // console.log('debugStorage:', name)
-    return storage(name)
+  state.shoppingList = []
+  emitter.on('createDoc', docName => {
+    const {publicKey: key, secretKey} = crypto.keyPair()
+    const keyHex = key.toString('hex')
+    console.log('Create doc:', docName, keyHex)
+    const storage = rai(`doc-${keyHex}`)
+    const archive = hyperdrive(storage, key, {secretKey})
+    archive.ready(() => {
+      console.log('hyperdrive ready')
+      state.key = key
+      state.archive = archive
+      let shoppingList = ['rice', 'bananas', 'kale', 'avocado', 'bread', 'quinoa', 'beer']
+      writeShoppingListItems(() => {
+        console.log('Done')
+        emitter.emit('pushState', `/doc/${keyHex}`)
+      })
+      
+      function writeShoppingListItems (cb) {
+        const item = shoppingList.shift()
+        if (!item) return cb()
+        console.log(item)
+        const json = JSON.stringify({
+          name: item,
+          bought: false
+        })
+        archive.writeFile(`/shopping-list/${newId()}.json`, json, err => {
+          if (err) throw err
+          writeShoppingListItems(cb)
+        })
+      }
+    })
+  })
+  emitter.on('DOMContentLoaded', updateDoc)
+  emitter.on('navigate', updateDoc)
+  function updateDoc () {
+    state.shoppingList = []
+    if (!state.params || !state.params.key) {
+      state.archive = null
+      state.key = null
+      state.loading = false
+      emitter.emit('render')
+    } else {
+      const keyHex = state.params.key
+      console.log(`Loading ${keyHex}`)
+      const storage = rai(`doc-${keyHex}`)
+      const archive = hyperdrive(storage, keyHex)
+      state.loading = true
+      emitter.emit('render')
+      archive.ready(() => {
+        console.log('hyperdrive ready')
+        state.key = archive.key
+        state.archive = archive
+        archive.readdir('/shopping-list', (err, fileList) => {
+          console.log('Shopping list files:', fileList.length)
+          readShoppingListFiles(() => {
+            console.log('Done reading files.')
+            state.loading = false
+            emitter.emit('render')
+          })
+          
+          function readShoppingListFiles (cb) {
+            const file = fileList.shift()
+            if (!file) return cb()
+            // console.log(`Loading ${file}`)
+            archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
+              try {
+                const item = JSON.parse(contents)
+                item.file = file
+                state.shoppingList.push(item)
+              } catch (e) {
+                console.error('Parse error', e)
+              }
+              readShoppingListFiles(cb)
+            })
+          }
+        })
+      })
+    }
   }
+
   /*
   const multicore = new Multicore(debugStorage)
   multicore.ready(() => {

@@ -9,11 +9,11 @@ class GitHubButton extends Nanocomponent {
 
   createElement () {
     return html`<div><a class="github-button"
-          href="https://github.com/jimpick/codemirror-multicore"
+          href="https://github.com/jimpick/dat-multiwriter-web"
           data-icon="octicon-star"
           data-size="large"
           data-show-count="true"
-          aria-label="Star jimpick/codemirror-multicore on GitHub">
+          aria-label="Star jimpick/dat-multiwriter-web on GitHub">
           Star
         </a></div>
     `
@@ -21,7 +21,6 @@ class GitHubButton extends Nanocomponent {
   
   load () {
     if (this.loaded) return
-    console.log('Jim load')
     setTimeout(() => {
       const scriptTag = html`<script async defer src="https://buttons.github.io/buttons.js"></script>`
       document.querySelector('head').appendChild(scriptTag)

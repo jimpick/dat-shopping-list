@@ -20,7 +20,8 @@
     "sheetify": "^7.3.0",
     "to-buffer": "^1.1.0",
     "websocket-stream": "^5.1.2",
-    "nanocomponent": "^6.5.1"
+    "nanocomponent": "^6.5.1",
+    "monotonic-timestamp-base36": "^1.0.0"
   },
   "engines": {
     "node": "9.x"

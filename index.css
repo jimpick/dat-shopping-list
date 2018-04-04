@@ -12,6 +12,18 @@ h2 {
   margin: 0 0 0.3em 0;
 }
 
+header button {
+  margin: 1em;
+}
+
+.bigBtn {
+  font-size: large;
+}
+
+#content {
+  margin-bottom: 2em;
+}
+
 footer {
   margin-top: 0.2em;
   display: flex;
