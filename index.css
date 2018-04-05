@@ -24,6 +24,21 @@ header button {
   margin-bottom: 2em;
 }
 
+.groceryItem {
+  cursor: pointer;
+}
+
+.groceryItem span[data-bought="true"] {
+  text-decoration: line-through;
+}
+
+.groceryItem .delete {
+  opacity: 0.6;
+  margin-left: 0.2em;
+  font-weight: 900;
+  color: blue;
+}
+
 footer {
   margin-top: 0.2em;
   display: flex;

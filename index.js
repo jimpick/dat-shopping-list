@@ -1,4 +1,5 @@
 const html = require('choo/html')
+const raw = require('choo/html/raw')
 const choo = require('choo')
 const rai = require('random-access-idb')
 const websocket = require('websocket-stream')
@@ -19,6 +20,9 @@ app.mount('body')
 
 const gitHubButton = new GitHubButton()
 
+// const ghButton = html`${gitHubButton.render()}`
+const ghButton = null
+
 const footer = html`
   <footer>
     <a href="https://glitch.com/edit/#!/dat-multiwriter-web-dev">
@@ -29,7 +33,7 @@ const footer = html`
       <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
             alt="Remix on Glitch" />
     </a>
-    ${gitHubButton.render()}
+    ${ghButton}
   </footer>
 `
 
@@ -88,17 +92,41 @@ function docView (state, emit) {
   const loading = state.loading ? html`Loading...` : null
   const items = state.shoppingList.map(item => {
     return html`
-      <li>
-        ${item.name}
+      <li class="groceryItem">
+        <span onclick=${toggle.bind(item)} data-bought=${item.bought}>
+          ${item.name}
+        </span>
+        <span class="delete" onclick=${remove.bind(item)}>${raw('&#x00d7;')}</span>
       </li>
     `
+    
+    function toggle () {
+      emit('toggleBought', this.file)
+    }
+    
+    function remove () {
+      emit('remove', this.file)
+    }
   })
+  items.push(html`
+    <li class="addGroceryItem">
+      <form onsubmit="${submitAddItem}">
+        <input type="text">
+        <input type="submit" value="Add">
+      </form>
+    </li>
+  `)
+  function submitAddItem (event) {
+    emit('addItem')
+    event.preventDefault()
+  }
   const noItems = !state.loading && state.shoppingList.length === 0 ? html`No items.` : null
   return html`
     <body>
       <h2>
         Shopping List
       </h2>
+      <i>Click items to cross them off.</i>
       <section id="content">
         ${loading}
         <ul>
@@ -201,8 +229,10 @@ function store (state, emitter) {
       }
     })
   })
+  
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
+  
   function updateDoc () {
     state.shoppingList = []
     if (!state.params || !state.params.key) {
@@ -219,32 +249,13 @@ function store (state, emitter) {
       emitter.emit('render')
       archive.ready(() => {
         console.log('hyperdrive ready')
-        state.key = archive.key
         state.archive = archive
-        archive.readdir('/shopping-list', (err, fileList) => {
-          console.log('Shopping list files:', fileList.length)
-          readShoppingListFiles(() => {
-            console.log('Done reading files.')
-            state.loading = false
-            emitter.emit('render')
-            connectToGateway(archive)
-          })
-          
-          function readShoppingListFiles (cb) {
-            const file = fileList.shift()
-            if (!file) return cb()
-            // console.log(`Loading ${file}`)
-            archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
-              try {
-                const item = JSON.parse(contents)
-                item.file = file
-                state.shoppingList.push(item)
-              } catch (e) {
-                console.error('Parse error', e)
-              }
-              readShoppingListFiles(cb)
-            })
-          }
+        state.key = archive.key
+        connectToGateway(archive)
+        readShoppingList()
+        archive.db.watch('/shopping-list', () => {
+          console.log('Shopping list changed')
+          readShoppingList()
         })
       })
       
@@ -260,7 +271,7 @@ function store (state, emitter) {
           const stream = websocket(url)
           pump(
             stream,
-            archive.replicate({encrypt: false}),
+            archive.replicate({encrypt: false, live: true}),
             stream,
             err => {
               console.log('Pipe finished', err && err.message)
@@ -272,4 +283,77 @@ function store (state, emitter) {
       }
     }
   }
+  
+  function readShoppingList () {
+    const archive = state.archive
+    const shoppingList = []
+    archive.readdir('/shopping-list', (err, fileList) => {
+      console.log('Shopping list files:', fileList.length)
+      readShoppingListFiles(() => {
+        console.log('Done reading files.')
+        state.loading = false
+        state.shoppingList = shoppingList
+        emitter.emit('render')
+      })
+
+      function readShoppingListFiles (cb) {
+        const file = fileList.shift()
+        if (!file) return cb()
+        archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
+          try {
+            const item = JSON.parse(contents)
+            item.file = file
+            shoppingList.push(item)
+          } catch (e) {
+            console.error('Parse error', e)
+          }
+          readShoppingListFiles(cb)
+        })
+      }
+    })
+  }
+  
+  emitter.on('toggleBought', itemFile => {
+    const item = state.shoppingList.find(item => item.file === itemFile)
+    console.log('toggleBought', itemFile, item)
+    // item.bought = !item.bought
+    const archive = state.archive
+    const json = JSON.stringify({
+      name: item.name,
+      bought: !item.bought
+    })
+    archive.writeFile(`/shopping-list/${item.file}`, json, err => {
+      if (err) throw err
+      console.log(`Rewrote: ${item.file}`)
+    })
+  })
+
+  emitter.on('remove', itemFile => {
+    const item = state.shoppingList.find(item => item.file === itemFile)
+    console.log('remove', itemFile, item)
+    // item.bought = !item.bought
+    const archive = state.archive
+    archive.unlink(`/shopping-list/${item.file}`, err => {
+      if (err) throw err
+      console.log(`Unlinked: ${item.file}`)
+      // readShoppingList()
+    })
+  })
+  
+  emitter.on('addItem', () => {
+    const name = document.querySelector('.addGroceryItem input').value.trim()
+    console.log('addItem', name)
+    if (name !== '') {
+      const archive = state.archive
+      const json = JSON.stringify({
+        name,
+        bought: false
+      })
+      const file = newId() + '.json'
+      archive.writeFile(`/shopping-list/${file}`, json, err => {
+        if (err) throw err
+        console.log(`Created: ${file}`)
+      })
+    }
+  })
 }

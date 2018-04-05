@@ -58,7 +58,7 @@ function attachWebsocket (server) {
           this.push(chunk)
           cb()
         }),
-        archive.replicate({encrypt: false}),
+        archive.replicate({encrypt: false, live: true}),
         through2(function (chunk, enc, cb) {
           // console.log('To web', chunk)
           this.push(chunk)
