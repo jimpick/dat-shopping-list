@@ -1,4 +1,5 @@
 const html = require('choo/html')
+const raw = require('choo/html/raw')
 const choo = require('choo')
 const rai = require('random-access-idb')
 const websocket = require('websocket-stream')
@@ -19,17 +20,20 @@ app.mount('body')
 
 const gitHubButton = new GitHubButton()
 
+const ghButton = html`${gitHubButton.render()}`
+// const ghButton = null
+
 const footer = html`
   <footer>
-    <a href="https://glitch.com/edit/#!/dat-multiwriter-web-dev">
+    <a href="https://glitch.com/edit/#!/dat-multiwriter-web">
       <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
             alt="view source button" aria-label="view source" height="33">
     </a>
-    <a href="https://glitch.com/edit/#!/remix/dat-multiwriter-web-dev">
+    <a href="https://glitch.com/edit/#!/remix/dat-multiwriter-web">
       <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
             alt="Remix on Glitch" />
     </a>
-    ${gitHubButton.render()}
+    ${ghButton}
   </footer>
 `
 
@@ -67,38 +71,96 @@ function createView (state, emit) {
       <h2>
         Enter name for your new document
       </h2>
-      <form onsubmit="${submit}">
-        <input id="docName" type="text">
+      <form onsubmit=${submit}>
+        <input type="text">
         <input type="submit">
       </form>
     </body>
   `
   
   function submit (event) {
-    const docName = document.querySelector('#docName').value
+    const docName = event.target.querySelector('input').value
     if (docName) {
       emit('createDoc', docName)
-    }
-    
+    }    
     event.preventDefault()
   }
 }
 
 function docView (state, emit) {
+  const db = state.archive && state.archive.db
+  let writeStatus = null
+  if (db) {
+    const sourceCopy = db.local === db.source ?
+        'You created this document.' : 'You joined this document.'
+    let authStatus = null
+    if (state.authorized) {
+      authStatus = html`<div>You are authorized to write to the document.</div>`
+    } else {
+      authStatus = html`<div>You are not currently authorized to write to the document.<br>
+        Your local key is: ${db.local.key.toString('hex')}</div>`
+    }
+    let authForm = null
+    if (state.authorized) {
+      authForm = html`
+        <form onsubmit=${submit}>
+          Add a writer: <input type="text" placeholder="Writer Local Key">
+          <input type="submit" value="Authorize">
+        </form>
+      `
+      function submit (event) {
+        const writerKey = event.target.querySelector('input').value.trim()
+        if (writerKey !== '') emit('authorize', writerKey)
+        event.preventDefault()
+      }
+    }
+    writeStatus = html`<section id="writeStatus">
+        <div>${sourceCopy}</div>
+        ${authStatus}
+        ${authForm}
+      </section>
+    `
+  }
   const loading = state.loading ? html`Loading...` : null
   const items = state.shoppingList.map(item => {
     return html`
-      <li>
-        ${item.name}
+      <li class="groceryItem">
+        <span onclick=${toggle.bind(item)} data-bought=${item.bought}>
+          ${item.name}
+        </span>
+        <span class="delete" onclick=${remove.bind(item)}>${raw('&#x00d7;')}</span>
       </li>
     `
+    
+    function toggle () {
+      emit('toggleBought', this.file)
+    }
+    
+    function remove () {
+      emit('remove', this.file)
+    }
   })
-  const noItems = !state.loading && state.shoppingList.length === 0 ? html`No items.` : null
+  items.push(html`
+    <li class="addGroceryItem">
+      <form onsubmit=${submitAddItem}>
+        <input type="text">
+        <input type="submit" value="Add">
+      </form>
+    </li>
+  `)
+  function submitAddItem (event) {
+    const name = event.target.querySelector('input').value.trim()
+    if (name !== '') emit('addItem', name)
+    event.preventDefault()
+  }
+  const noItems = !state.loading && state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
   return html`
     <body>
       <h2>
         Shopping List
       </h2>
+      ${writeStatus}
+      <i>Click items to cross them off.</i>
       <section id="content">
         ${loading}
         <ul>
@@ -201,9 +263,12 @@ function store (state, emitter) {
       }
     })
   })
+  
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
+  
   function updateDoc () {
+    state.authorized = null
     state.shoppingList = []
     if (!state.params || !state.params.key) {
       state.archive = null
@@ -219,32 +284,22 @@ function store (state, emitter) {
       emitter.emit('render')
       archive.ready(() => {
         console.log('hyperdrive ready')
-        state.key = archive.key
+        console.log('Local key:', archive.db.local.key.toString('hex'))
+        console.log('Writers:')
+        archive.db._writers.forEach(writer => {
+          console.log('  ', writer._feed.key.toString('hex'), writer._feed.length)
+        })
         state.archive = archive
+        state.key = archive.key
         connectToGateway(archive)
-        archive.readdir('/shopping-list', (err, fileList) => {
-          console.log('Shopping list files:', fileList.length)
-          readShoppingListFiles(() => {
-            console.log('Done reading files.')
-            state.loading = false
-            emitter.emit('render')
+        readShoppingList()
+        archive.db.watch(() => {
+          console.log('Archive updated:', archive.key.toString('hex'))
+          console.log('Writers:')
+          archive.db._writers.forEach(writer => {
+            console.log('  ', writer._feed.key.toString('hex'), writer._feed.length)
           })
-          
-          function readShoppingListFiles (cb) {
-            const file = fileList.shift()
-            if (!file) return cb()
-            // console.log(`Loading ${file}`)
-            archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
-              try {
-                const item = JSON.parse(contents)
-                item.file = file
-                state.shoppingList.push(item)
-              } catch (e) {
-                console.error('Parse error', e)
-              }
-              readShoppingListFiles(cb)
-            })
-          }
+          readShoppingList()
         })
       })
       
@@ -260,11 +315,11 @@ function store (state, emitter) {
           const stream = websocket(url)
           pump(
             stream,
-            archive.replicate({encrypt: false}),
+            archive.replicate({encrypt: false, live: true}),
             stream,
             err => {
-              console.log('Pipe finished', err.message)
-              connectWebsocket()
+              console.log('Pipe finished', err && err.message)
+              setTimeout(connectWebsocket, 5000)
             }
           )
         }
@@ -272,167 +327,99 @@ function store (state, emitter) {
       }
     }
   }
-
-  /*
-  const multicore = new Multicore(debugStorage)
-  multicore.ready(() => {
-    const archiverKey = multicore.archiver.changes.key.toString('hex')
-    console.log('Archiver key:', archiverKey)
-
-    emitter.on('publish', () => {
-      const archive = state.currentArchive ? state.currentArchive
-        : multicore.createArchive()
-      const value = editor.codemirror.getValue()
-      archive.ready(() => {
-        const key = archive.key.toString('hex')
-        const datJson = {
-          url: `dat://${key}/`,
-          title: document.getElementById('title').value,
-          description: ''
-        }
-        archive.writeFile('/dat.json', JSON.stringify(datJson, null, 2), err => {
-          if (err) {
-            console.error('Error writing to Dat', err)
-            return
-          }
-          archive.writeFile('/index.html', value, err => {
-            if (err) {
-              console.error('Error writing to Dat', err)
-              return
-            }
-            console.log(
-              `Published:\n` +
-              `metadata ${prettyHash(archive.metadata.key)} ` +
-              `dk: ${prettyHash(archive.metadata.discoveryKey)} ` +
-              `length: ${archive.metadata.length}\n` +
-              `content ${prettyHash(archive.content.key)} ` +
-              `dk: ${prettyHash(archive.content.discoveryKey)} ` +
-              `length: ${archive.content.length}`
-            )
-            state.currentArchive = archive
-            multicore.replicateFeed(archive)
-            emitter.emit('pushState', `/page/${key}`)
-          })
-        })
-      })
-    })
-
-    emitter.on('navigate', updateDoc)
-    
-    emitter.on('delete', key => {
-      console.log('Deleting', key)
-      state.currentArchive = null
-      state.indexHtml = ''
-      state.title = ''
-      multicore.archiver.remove(key, () => {
-        delete state.archives[key]
-        emitter.emit('pushState', '/')
-      })
-    })
-
-    const host = document.location.host
-    const proto = document.location.protocol === 'https:' ? 'wss' : 'ws'
-    const url = `${proto}://${host}/archiver/${archiverKey}`
-
-    function connectWebsocket () {
-      console.log('Connecting websocket', url)
-      const stream = websocket(url)
-      pump(
-        stream,
-        multicore.archiver.replicate({encrypt: false}),
-        stream,
-        err => {
-          console.log('Pipe finished', err.message)
-          connectWebsocket()
-        }
-      )
-    }
-    connectWebsocket()
-
-    multicore.archiver.on('add', feed => {
-      multicore.replicateFeed(feed)
-    })
-    multicore.archiver.on('add-archive', readMetadata)
-    Object.keys(multicore.archiver.archives).forEach(dk => {
-      const archive = multicore.archiver.archives[dk]
-      readMetadata(archive.metadata, archive.content)
-    })
-    updateDoc()
-
-    function updateDoc () {
-      if (!state.params.key) {
-        state.title = 'My Dat Page'
-        state.indexHtml = template
-        state.currentArchive = null
-        emitter.emit('render')
-      } else {
-        const key = state.params.key
-        let archive
-        if (state.archives[key] && state.archives[key].archive) {
-          archive = state.archives[key].archive
-          console.log('Key found (cached)', key)
-        } else {
-          const dk = hypercore.discoveryKey(toBuffer(key, 'hex'))
-            .toString('hex')
-          if (multicore.archiver.archives[dk]) {
-            archive = multicore.archiver.getHyperdrive(dk)
-            if (!state.archives[key]) {
-              state.archives[key] = {dk}
-            }
-            state.archives[key].archive = archive
-            console.log('Key found (loaded)', key)
-          } else {
-            console.error('Key not found locally', key)
-            // It might be better to display an error in the UI
-            emitter.emit('pushState', '/')
-          }
-        }
-        readMetadata(archive.metadata)
-        archive.readFile('index.html', 'utf-8', (err, data) => {
-          if (err) {
-            console.error('Error reading index.html', key, err)
-            return
-          }
-          try {
-            state.indexHtml = data
-            state.currentArchive = archive
-            emitter.emit('render')
-          } catch (e) {
-            // FIXME: Throw an error to the UI
-          }
-        })
-      }
-    }
-
-    function readMetadata (metadata) {
-      const key = metadata.key.toString('hex')
-      const dk = metadata.discoveryKey.toString('hex')
-      if (!state.archives[key]) {
-        state.archives[key] = {dk}
-      }
-      emitter.emit('render')
-      let archive
-      if (state.archives[key].archive) {
-        archive = state.archives[key].archive
-      } else {
-        archive = multicore.archiver.getHyperdrive(dk)
-        state.archives[key].archive = archive
-      }
-      archive.readFile('dat.json', 'utf-8', (err, data) => {
-        if (err) {
-          // console.error('Error reading dat.json', key, err)
-          return
-        }
-        try {
-          const {title} = JSON.parse(data.toString())
-          state.archives[key].title = title
-          if (state.params.key === key) state.title = title
+  
+  function readShoppingList () {
+    const archive = state.archive
+    const shoppingList = []
+    archive.readdir('/shopping-list', (err, fileList) => {
+      console.log('Shopping list files:', fileList.length)
+      readShoppingListFiles(() => {
+        console.log('Done reading files.')
+        state.loading = false
+        state.shoppingList = shoppingList
+        updateAuthorized(err => {
+          if (err) throw err
           emitter.emit('render')
-        } catch (e) {
-          // Don't worry about it
-        }
+        })
       })
-    }
+
+      function readShoppingListFiles (cb) {
+        const file = fileList.shift()
+        if (!file) return cb()
+        archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
+          try {
+            const item = JSON.parse(contents)
+            item.file = file
+            shoppingList.push(item)
+          } catch (e) {
+            console.error('Parse error', e)
+          }
+          readShoppingListFiles(cb)
+        })
+      }
+    })
+  }
+  
+  function updateAuthorized (cb) {
+    if (state.authorized === true) return cb()
+    const db = state.archive.db
+    console.log('Checking if local key is authorized')
+    db.authorized(db.local.key, (err, authorized) => {
+      if (err) return cb(err)
+      console.log('Authorized status:', authorized)
+      state.authorized = authorized
+      cb()
+    })
+  }
+  
+  emitter.on('toggleBought', itemFile => {
+    const item = state.shoppingList.find(item => item.file === itemFile)
+    console.log('toggleBought', itemFile, item)
+    // item.bought = !item.bought
+    const archive = state.archive
+    const json = JSON.stringify({
+      name: item.name,
+      bought: !item.bought
+    })
+    archive.writeFile(`/shopping-list/${item.file}`, json, err => {
+      if (err) throw err
+      console.log(`Rewrote: ${item.file}`)
+    })
   })
-  */
+
+  emitter.on('remove', itemFile => {
+    const item = state.shoppingList.find(item => item.file === itemFile)
+    console.log('remove', itemFile, item)
+    // item.bought = !item.bought
+    const archive = state.archive
+    archive.unlink(`/shopping-list/${item.file}`, err => {
+      if (err) throw err
+      console.log(`Unlinked: ${item.file}`)
+      // readShoppingList()
+    })
+  })
+  
+  emitter.on('addItem', name => {
+    console.log('addItem', name)
+    const archive = state.archive
+    const json = JSON.stringify({
+      name,
+      bought: false
+    })
+    const file = newId() + '.json'
+    archive.writeFile(`/shopping-list/${file}`, json, err => {
+      if (err) throw err
+      console.log(`Created: ${file}`)
+    })
+  })
+
+  emitter.on('authorize', writerKey => {
+    console.log('authorize', writerKey)
+    const archive = state.archive
+    archive.db.authorize(toBuffer(writerKey, 'hex'), err => {
+      if (err) throw err
+      console.log(`Authorized.`)
+      emitter.emit('render')
+    })
+  })
 }
