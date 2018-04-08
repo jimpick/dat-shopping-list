@@ -20,8 +20,8 @@ app.mount('body')
 
 const gitHubButton = new GitHubButton()
 
-const ghButton = html`${gitHubButton.render()}`
-// const ghButton = null
+// const ghButton = html`${gitHubButton.render()}`
+const ghButton = null
 
 const footer = html`
   <footer>
