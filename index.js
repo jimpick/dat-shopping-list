@@ -9,7 +9,9 @@ const toBuffer = require('to-buffer')
 const hyperdrive = require('hyperdrive')
 const crypto = require('hypercore/lib/crypto')
 const newId = require('monotonic-timestamp-base36')
-const GitHubButton = require('./githubButton')
+const GitHubButton = require('./githubButton')('jimpick/dat-multiwriter-web')
+
+const glitchAppName = 'dat-multiwriter-web'
 
 const app = choo()
 app.use(store)
@@ -18,24 +20,21 @@ app.route('/create', createView)
 app.route('/doc/:key', docView)
 app.mount('body')
 
-const gitHubButton = new GitHubButton()
-
-// const ghButton = html`${gitHubButton.render()}`
-const ghButton = null
-
-const footer = html`
-  <footer>
-    <a href="https://glitch.com/edit/#!/dat-multiwriter-web">
-      <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
-            alt="view source button" aria-label="view source" height="33">
-    </a>
-    <a href="https://glitch.com/edit/#!/remix/dat-multiwriter-web">
-      <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
-            alt="Remix on Glitch" />
-    </a>
-    ${ghButton}
-  </footer>
-`
+function footer (state) {
+  return html`
+    <footer>
+      <a href="https://glitch.com/edit/#!/${glitchAppName}">
+        <img src="https://cdn.glitch.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fview-source%402x.png?1513093958802"
+              alt="view source button" aria-label="view source" height="33">
+      </a>
+      <a href="https://glitch.com/edit/#!/remix/${glitchAppName}">
+        <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
+              alt="Remix on Glitch" />
+      </a>
+      ${state.cache(GitHubButton, 'gitHubButton').render()}
+    </footer>
+  `
+}
 
 function indexView (state, emit) {
   const documents = state.documents.map(doc => {
@@ -60,7 +59,7 @@ function indexView (state, emit) {
       </header>
       <section id="content">
       </section>
-      ${footer}
+      ${footer(state)}
     </body>
   `
 }
@@ -122,24 +121,26 @@ function docView (state, emit) {
     `
   }
   const loading = state.loading ? html`Loading...` : null
-  const items = state.shoppingList.map(item => {
-    return html`
-      <li class="groceryItem">
-        <span onclick=${toggle.bind(item)} data-bought=${item.bought}>
-          ${item.name}
-        </span>
-        <span class="delete" onclick=${remove.bind(item)}>${raw('&#x00d7;')}</span>
-      </li>
-    `
-    
-    function toggle () {
-      emit('toggleBought', this.file)
-    }
-    
-    function remove () {
-      emit('remove', this.file)
-    }
-  })
+  const items = state.shoppingList
+    .sort((a, b) => a.dateAdded - b.dateAdded)
+    .map(item => {
+      return html`
+        <li class="groceryItem">
+          <span onclick=${toggle.bind(item)} data-bought=${item.bought}>
+            ${item.name}
+          </span>
+          <span class="delete" onclick=${remove.bind(item)}>${raw('&#x00d7;')}</span>
+        </li>
+      `
+
+      function toggle () {
+        emit('toggleBought', this.file)
+      }
+
+      function remove () {
+        emit('remove', this.file)
+      }
+    })
   items.push(html`
     <li class="addGroceryItem">
       <form onsubmit=${submitAddItem}>
@@ -169,7 +170,7 @@ function docView (state, emit) {
         ${noItems}
         <a href="/">Back to top</a>
       </section>
-      ${footer}
+      ${footer(state)}
     </body>
   `
 }
@@ -212,7 +213,6 @@ function store (state, emitter) {
   function readDocuments (cb) {
     const db = state.documentsDB
     if (!db) return
-    console.log('Jim readDocuments')
     const objectStore = db.transaction('documents').objectStore('documents')
     const index = objectStore.index('name')
     state.documents = []
@@ -254,7 +254,8 @@ function store (state, emitter) {
         console.log(item)
         const json = JSON.stringify({
           name: item,
-          bought: false
+          bought: false,
+          dateAdded: Date.now()
         })
         archive.writeFile(`/shopping-list/${newId()}.json`, json, err => {
           if (err) throw err
@@ -395,7 +396,6 @@ function store (state, emitter) {
     archive.unlink(`/shopping-list/${item.file}`, err => {
       if (err) throw err
       console.log(`Unlinked: ${item.file}`)
-      // readShoppingList()
     })
   })
   
@@ -404,7 +404,8 @@ function store (state, emitter) {
     const archive = state.archive
     const json = JSON.stringify({
       name,
-      bought: false
+      bought: false,
+      dateAdded: Date.now()
     })
     const file = newId() + '.json'
     archive.writeFile(`/shopping-list/${file}`, json, err => {
