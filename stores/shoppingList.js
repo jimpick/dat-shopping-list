@@ -11,6 +11,7 @@ module.exports = store
 function store (state, emitter) {
   state.shoppingList = []
   state.localKeyCopied = false
+  state.writeStatusCollapsed = localStorage.getItem('writeStatusCollapsed')
   
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
@@ -19,6 +20,7 @@ function store (state, emitter) {
     state.authorized = null
     state.shoppingList = []
     state.localKeyCopied = false
+    state.title = ''
     if (!state.params || !state.params.key) {
       state.archive = null
       state.key = null
@@ -88,15 +90,28 @@ function store (state, emitter) {
       state.key = key
       state.archive = archive
       let shoppingList = ['Rice', 'Bananas', 'Kale', 'Avocados', 'Bread', 'Quinoa', 'Beer']
-      writeShoppingListItems(() => {
-        console.log('Done')
-        emitter.emit('writeNewDocumentRecord', keyHex, docName)
+      writeDatJson(() => {
+        writeShoppingListItems(() => {
+          console.log('Done')
+          emitter.emit('writeNewDocumentRecord', keyHex, docName)
+        })
       })
       
+      function writeDatJson (cb) {
+        const json = JSON.stringify({
+          url: `dat://${keyHex}/`,
+          title: docName,
+          description: `Dat Shopping List demo - https://${state.glitchAppName}.glitch.me/`
+        }, null, 2)
+        archive.writeFile('dat.json', json, err => {
+          if (err) throw err
+          cb()
+        })
+      }
+
       function writeShoppingListItems (cb) {
         const item = shoppingList.shift()
         if (!item) return cb()
-        console.log(item)
         const json = JSON.stringify({
           name: item,
           bought: false,
@@ -115,15 +130,36 @@ function store (state, emitter) {
     const shoppingList = []
     archive.readdir('/shopping-list', (err, fileList) => {
       console.log('Shopping list files:', fileList.length)
-      readShoppingListFiles(() => {
-        console.log('Done reading files.')
-        state.loading = false
-        state.shoppingList = shoppingList
-        updateAuthorized(err => {
-          if (err) throw err
-          emitter.emit('render')
+      readTitleFromDatJson(title => {
+        readShoppingListFiles(() => {
+          console.log('Done reading files.', title)
+          updateAuthorized(err => {
+            if (err) throw err
+            state.loading = false
+            state.title = title
+            state.shoppingList = shoppingList
+            emitter.emit('writeNewDocumentRecord', state.params.key, title)
+            emitter.emit('render')
+          })
         })
       })
+
+      function readTitleFromDatJson (cb) {
+        archive.readFile('dat.json', 'utf8', (err, contents) => {
+          if (err) {
+            console.error('dat.json error', err)
+            return cb('Unknown')
+          }
+          if (!contents) return cb('Unknown')
+          try {
+            const metadata = JSON.parse(contents)
+            cb(metadata.title)
+          } catch (e) {
+            console.error('Parse error', e)
+            cb('Unknown')
+          }
+        })
+      }
 
       function readShoppingListFiles (cb) {
         const file = fileList.shift()
@@ -149,6 +185,13 @@ function store (state, emitter) {
     db.authorized(db.local.key, (err, authorized) => {
       if (err) return cb(err)
       console.log('Authorized status:', authorized)
+      if (
+        state.authorized === false &&
+        authorized === true &&
+        !state.writeStatusCollapsed
+      ) {
+        emitter.emit('toggleWriteStatusCollapsed')
+      }
       state.authorized = authorized
       cb()
     })
@@ -206,4 +249,9 @@ function store (state, emitter) {
     })
   })
 
+  emitter.on('toggleWriteStatusCollapsed', docName => {
+    state.writeStatusCollapsed = !state.writeStatusCollapsed
+    localStorage.setItem('writeStatusCollapsed', state.writeStatusCollapsed)
+    emitter.emit('render')
+  })
 }

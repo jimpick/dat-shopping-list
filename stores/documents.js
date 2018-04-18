@@ -1,14 +1,22 @@
+const thunky = require('thunky')
+
 module.exports = store
 
 function store (state, emitter) {
   state.documents = []
+  
+  const ready = thunky(openDocumentsDB)
 
-  openDocumentsDB(() => { emitter.emit('render') })
+  
+  ready(() => { emitter.emit('render') })
 
   emitter.on('writeNewDocumentRecord', (keyHex, docName) => {
-    writeDocumentRecord(keyHex, docName, err => {
-      if (err) throw err
-      emitter.emit('pushState', `/doc/${keyHex}`)
+    ready(() => {
+      if (state.documents.find(doc => doc.key === keyHex)) return
+      writeDocumentRecord(keyHex, docName, err => {
+        if (err) throw err
+        emitter.emit('pushState', `/doc/${keyHex}`)
+      })
     })
   })
   

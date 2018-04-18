@@ -13,6 +13,7 @@ const prefix = css`
     .uvp {
       box-shadow: 0 0 20px rgba(0,0,0,.15);
       padding: 1em;
+      background-color: var(--color-white);
     }
     .uvp h4 {
       margin: 0.5rem 1rem 1rem 1rem;
@@ -35,6 +36,7 @@ const prefix = css`
       position: relative;
       cursor: pointer;
       font-size: 1.2rem;
+      background-color: var(--color-white);
     }
     li span {
       font-size: 12px;
@@ -44,6 +46,18 @@ const prefix = css`
       top: 0.3rem;
       right: 0.3rem;
       pointer-events: none;
+    }
+    .solo {
+      background-image: url(/img/bg-landing-page.svg);
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 16rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      button {
+        height: 4rem;
+      }
     }
   }
 `
@@ -68,6 +82,7 @@ function mainView (state, emit) {
     }
   })
   const docHeader = documents.length > 0 ? html`<h3>Shopping Lists</h3>` : null
+  const soloCta = documents.length === 0 ? 'solo' : 'not-solo'
   return html`
     <body class=${prefix}>
       ${header()}
@@ -90,7 +105,9 @@ function mainView (state, emit) {
         <ul>
           ${documents}
         </ul>
-        ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+        <div class=${soloCta}>
+          ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+        </div>
       </section>
       ${footer(state)}
     </body>

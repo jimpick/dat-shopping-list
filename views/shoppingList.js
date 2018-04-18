@@ -2,6 +2,7 @@ const html = require('choo/html')
 const raw = require('choo/html/raw')
 const css = require('sheetify')
 const copy = require('clipboard-copy')
+const prettyHash = require('pretty-hash')
 const header = require('../components/header')
 const button = require('../components/button')
 const footer = require('../components/footer')
@@ -12,21 +13,64 @@ const prefix = css`
       margin: 1rem 1rem 2rem 1rem;
     }
 
+    .title {
+      position: relative;
+      h1 {
+        margin: 0 0 0.5em 0;
+      }
+      .hash {
+        font-size: 12px;
+        font-family: monospace;
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+      }
+    }
+
     #writeStatus {
       box-shadow: 0 0 10px rgba(0,0,0,.15);
-      padding: 0.5em;
-      overflow: hidden;
+      padding: 0.7rem;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+
+      .collapseExpand {
+        position: absolute;
+        top: -0.8rem;
+        right: 0.6rem;
+        z-index: 1;
+        font-size: 0.8rem;
+        cursor: pointer;
+        color: var(--color-green);
+        background: var(--color-white);
+        border: 2px solid var(--color-neutral-10);
+        border-radius: 0.8rem;
+        width: 5rem;
+        height: 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
       .noAuth {
         color: var(--color-red);
+        font-weight: 700;
       }
 
-      .explanation {
+      .okAuth {
+        color: var(--color-green);
+        font-weight: 700;
+      }
+
+      .help {
         font-size: 0.8rem;
         font-weight: 500;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
       }
 
       .localKeySection {
+        -webkit-tap-highlight-color: black;
         background: var(--color-neutral-10);
         padding: 0.5rem;
 
@@ -61,7 +105,7 @@ const prefix = css`
 
         button {
           font-size: 0.7rem;
-          padding: 0.1rem 0.5rem;
+          padding: 0.5rem 0.5rem;
           font-weight: 400;
           margin-right: 1rem;
         }
@@ -70,12 +114,22 @@ const prefix = css`
       form {
         margin: 0;
         
-        input[type="submit"] {
-          font-size: 0.7rem;
-          margin-left: 0.4rem;
-          padding: 0.1rem 0.5rem;
-          font-weight: 400;
+        .writerInputs {
+          display: flex;
+
+          input[type="text"] {
+            flex: 1;
+            margin-left: 0.4rem;
+          }
+
+          input[type="submit"] {
+            font-size: 0.7rem;
+            margin-left: 0.4rem;
+            padding: 0.1rem 0.5rem;
+            font-weight: 400;
+          }
         }
+
       }
     }
 
@@ -160,45 +214,95 @@ const prefix = css`
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
+  if (state.loading ) {
+    return html`
+      <body class=${prefix}>
+        ${header()}
+        <section class="content">
+          Loading...
+          <nav class="bottomNav">
+            <a href="/" class="link">Home</a>
+          </nav>
+        </section>
+        ${footer(state)}
+      </body>
+    `
+  }
   const db = state.archive && state.archive.db
   let writeStatus = null
   if (db) {
-    const sourceCopy = db.local === db.source ?
-        'You created this document.' : 'You joined this document.'
+    let sourceCopy = null
+    if (!state.writeStatusCollapsed) {
+      sourceCopy = db.local === db.source ?
+          'You created this document.' : 'You joined this document.'
+    }
     let authStatus = null
     if (state.authorized) {
-      authStatus = html`<div>You are authorized to write to this document.</div>`
+      if (state.writeStatusCollapsed) {
+        authStatus = html`<div><span class="okAuth">Authorized</span> (Expand to add a writer)</div>`
+      } else {
+        authStatus = html`<div class="okAuth">You are authorized to write to this document.</div>`
+      }
     } else {
       const localKey = db.local.key.toString('hex')
-      authStatus = html`<div>
-        <div class="noAuth">
-          You are not currently authorized to write to this document.
-        </div>
-        <div class="explanation">
-          You may edit your local copy, but changes will not be synchronized until you
-          pass your "local key" to an owner of the document and they authorize you.
-        </div>
-        <div class="localKeySection">
-          Your local key is:
-          <div class="noWrap">
-            <span class="localKey">${localKey}</span>
+      let explanationAndLocalKey = null
+      if (!state.writeStatusCollapsed) {
+        explanationAndLocalKey = html`
+          <div>
+            <p class="help">
+              You may edit your local copy, but changes will not be synchronized until you
+              pass your "local key" to an owner of the document and they authorize you.
+            </p>
+            <div class="localKeySection" onclick=${e => e.stopPropagation()}>
+              Your local key is:
+              <div class="noWrap">
+                <span class="localKey">${localKey}</span>
+              </div>
+              ${button.button('Copy to Clipboard', copyToClipboard)}
+              ${state.localKeyCopied ? 'Copied!' : null}
+            </div>
           </div>
-          ${button.button('Copy to Clipboard', copyToClipboard)}
-          ${state.localKeyCopied ? 'Copied!' : null}
-        </div>
-      </div>`
-      function copyToClipboard () {
-        copy(localKey)
-        state.localKeyCopied = true
-        emit('render')
+        `
+        function copyToClipboard () {
+          copy(localKey)
+          alert('"Local Key" copied to clipboard')
+          state.localKeyCopied = true
+          emit('render')
+        }
       }
+      let noAuth
+      if (!state.writeStatusCollapsed) {
+        noAuth = html`<div class="noAuth">
+          You are not currently authorized to write to this document.
+        </div>`
+      } else {
+        noAuth = html`<div>
+          <span class="noAuth">Not authorized</span>
+          (Expand for more info)
+        </div>`        
+      }
+      authStatus = html`<div>
+        ${noAuth}
+        ${explanationAndLocalKey}
+      </div>`
     }
     let authForm = null
-    if (state.authorized) {
+    if (!state.writeStatusCollapsed && state.authorized) {
       authForm = html`
         <form onsubmit=${submit}>
-          Add a writer: <input type="text" placeholder="Writer Local Key">
-          ${button.submit('Authorize')}
+          <p class="help">
+            You can share this shopping list to multiple devices or other
+            people. Just copy the URL and paste it into another browser.
+            (Hint: You can click
+            on the "hex number" on the upper right to copy the URL to your
+            clipboard). Other copies may write to this document if you
+            authorize them by pasting their 'local key' into the form below.
+          </p>
+          <div class="writerInputs" onclick=${e => e.stopPropagation()}>
+            <div>Add a writer:</div> 
+            <input type="text" placeholder="Writer Local Key">
+            ${button.submit('Authorize')}
+          </div>
         </form>
       `
       function submit (event) {
@@ -207,15 +311,19 @@ function shoppingListView (state, emit) {
         event.preventDefault()
       }
     }
+    const collapseExpand = state.writeStatusCollapsed ?
+            raw('&#x25bc; Expand') : raw('&#x25b2; Collapse')
     writeStatus = html`
-      <section id="writeStatus">
+      <section id="writeStatus" onclick=${() => emit('toggleWriteStatusCollapsed')}>
+        <div class="collapseExpand">
+          ${collapseExpand}
+        </div>
         <div>${sourceCopy}</div>
         ${authStatus}
         ${authForm}
       </section>
     `
   }
-  const loading = state.loading ? html`Loading...` : null
   const items = state.shoppingList
     .sort((a, b) => a.dateAdded - b.dateAdded)
     .map(item => {
@@ -261,8 +369,13 @@ function shoppingListView (state, emit) {
     <body class=${prefix}>
       ${header()}
       <section class="content">
+        <div class="title">
+          <h1>${state.title}</h1>
+          <div class="hash" onclick=${copyUrl}>
+            ${prettyHash(state.key)}
+          </div>
+        </div>
         ${writeStatus}
-        ${loading}
         <ul>
           ${items}
         </ul>
@@ -275,6 +388,11 @@ function shoppingListView (state, emit) {
       ${footer(state)}
     </body>
   `
+
+  function copyUrl (event) {
+    copy(document.location.href)
+    alert('Shopping list URL copied to clipboard')
+  }
   
   function deleteList (event) {
     const confirm = window.confirm('Delete this list?')
