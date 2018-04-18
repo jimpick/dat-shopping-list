@@ -85,11 +85,16 @@ const port = process.env.PORT || 5000
 const devServer = budo('index.js', {
   port,
   browserify: {
-    transform: [ brfs, sheetify ]
+    transform: [
+      brfs,
+      [sheetify, {transform: ['sheetify-nested']}]
+    ]
   },
   middleware: [
+    express.static('img'),
     router
-  ]
+  ],
+  dir: ['.', 'static']
 })
 devServer.on('connect', event => {
   console.log('Listening on', event.uri)

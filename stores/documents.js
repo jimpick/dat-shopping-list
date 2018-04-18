@@ -11,6 +11,15 @@ function store (state, emitter) {
       emitter.emit('pushState', `/doc/${keyHex}`)
     })
   })
+  
+  emitter.on('deleteCurrentDoc', () => {
+    const keyHex = state.params.key
+    deleteDoc(keyHex, err => {
+      if (err) throw err
+      console.log('Doc deleted', keyHex)
+      emitter.emit('pushState', '/')
+    })
+  })
 
   // Store documents in indexedDB
   function openDocumentsDB (cb) {
@@ -66,6 +75,26 @@ function store (state, emitter) {
         dateAdded: Date.now()
       })
     request.onsuccess = function (event) {
+      readDocuments(() => {
+        console.log('documents reloaded')
+        cb()
+      })
+    }
+    request.onerror = function (err) {
+      cb(err)
+    }
+  }
+  
+  function deleteDoc (key, cb) {
+    console.log('Jim delete', key)
+    const db = state.documentsDB
+    const request = db.transaction('documents', 'readwrite')
+      .objectStore('documents')
+      .delete(key)
+    request.onsuccess = function (event) {
+      // Note: Deleting db doesn't return success ... probably because it's
+      // still in use? It appears that it still gets cleaned up.
+      window.indexedDB.deleteDatabase(`doc-${key}`)
       readDocuments(() => {
         console.log('documents reloaded')
         cb()
