@@ -10,6 +10,7 @@ module.exports = store
 
 function store (state, emitter) {
   state.shoppingList = []
+  state.localKeyCopied = false
   
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
@@ -17,6 +18,7 @@ function store (state, emitter) {
   function updateDoc () {
     state.authorized = null
     state.shoppingList = []
+    state.localKeyCopied = false
     if (!state.params || !state.params.key) {
       state.archive = null
       state.key = null
@@ -85,7 +87,7 @@ function store (state, emitter) {
       console.log('hyperdrive ready')
       state.key = key
       state.archive = archive
-      let shoppingList = ['rice', 'bananas', 'kale', 'avocado', 'bread', 'quinoa', 'beer']
+      let shoppingList = ['Rice', 'Bananas', 'Kale', 'Avocados', 'Bread', 'Quinoa', 'Beer']
       writeShoppingListItems(() => {
         console.log('Done')
         emitter.emit('writeNewDocumentRecord', keyHex, docName)
