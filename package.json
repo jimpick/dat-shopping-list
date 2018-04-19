@@ -25,7 +25,9 @@
     "clipboard-copy": "^2.0.0",
     "dat-colors": "^3.5.1",
     "sheetify-nested": "^1.0.2",
-    "thunky": "^1.0.2"
+    "thunky": "^1.0.2",
+    "choo-service-worker": "^2.4.0",
+    "workbox-build": "^3.1.0"
   },
   "engines": {
     "node": "9.x"

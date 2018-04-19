@@ -20,7 +20,7 @@ module.exports = createView
 function createView (state, emit) {
   return html`
     <body class=${prefix}>
-      ${header()}
+      ${header(state)}
       <div class="content">
         <h2>
           Enter a name for your new shopping list

@@ -73,7 +73,8 @@ function mainView (state, emit) {
       </li>
     `
     function click (event) {
-      event.target.querySelector('a').click()
+      const link = event.target.querySelector('a')
+      if (link) link.click()
     }
     function keydown (event) {
       if (event.key === ' ' || event.key === 'Enter') {
@@ -85,7 +86,7 @@ function mainView (state, emit) {
   const soloCta = documents.length === 0 ? 'solo' : 'not-solo'
   return html`
     <body class=${prefix}>
-      ${header()}
+      ${header(state)}
       <section class="content">
         <div class="uvp">
           <h4>Test drive multi-writer Dat!</h4>

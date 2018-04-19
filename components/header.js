@@ -5,13 +5,13 @@ const prefix = css`
   :host {
     border-bottom: 1px solid var(--color-neutral-10);
     flex: 0 64px;
-    line-height: 64px;
     color: var(--color-neutral);
     font-weight: 700;
     font-size: 1.5rem;
     display: flex;
     padding-left: 1rem;
     padding-right: 1rem;
+    position: relative;
     a {
       display: flex;
       align-items: center;
@@ -38,12 +38,36 @@ const prefix = css`
     .first-word {
       color: var(--color-neutral);
     }
+    .networkStatus {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.3rem;
+      font-weight: 200;
+      font-size: 0.6rem;
+
+      .online {
+        color: var(--color-green);
+      }
+
+      .offline {
+        color: var(--color-red);
+      }
+    }
   }
 `
 
 module.exports = header
 
-function header () {
+function header (state) {
+  let networkStatus
+  if (state && state.networkStatus !== undefined) {
+    const onlineOffline = state.networkStatus ?
+          html`<span class="online">Online</span>` :
+          html`<span class="offline">Offline</span>`
+    networkStatus = html`<div class="networkStatus">
+      Network: ${onlineOffline}
+    </div>`
+  }
   return html`
     <nav class=${prefix}>
       <a href="/">
@@ -52,6 +76,7 @@ function header () {
           <span class="first-word">Dat</span> Shopping List
         </span>
       </a>
+      ${networkStatus}
     </nav>
   `
 }

@@ -10,6 +10,7 @@ const hyperdiscovery = require('hyperdiscovery')
 const sheetify = require('sheetify')
 const brfs = require('brfs')
 const prettyHash = require('pretty-hash')
+const workboxBuild = require('workbox-build')
 
 require('events').prototype._maxListeners = 100
 
@@ -81,22 +82,59 @@ function attachWebsocket (server) {
   })
 }
 
-const port = process.env.PORT || 5000
-const devServer = budo('index.js', {
-  port,
-  browserify: {
-    transform: [
-      brfs,
-      [sheetify, {transform: ['sheetify-nested']}]
-    ]
+workboxBuild.generateSW({
+  swDest: './generated/sw.js',
+  importWorkboxFrom: 'local',
+  navigateFallback: '/',
+  navigateFallbackWhitelist: [/^\/doc/],
+  globDirectory: '.',
+  globPatterns: ['index.html', 'index.js', 'static\/**\/*.svg'],
+  modifyUrlPrefix: {
+    'static': ''
   },
-  middleware: [
-    express.static('img'),
-    router
-  ],
-  dir: ['.', 'static']
+  templatedUrls: {
+    '/': [ 'views/main.js' ],
+    '/create': [ 'views/create.js' ],
+    '/doc': [ 'views/shoppingList.js' ]
+  },
+  runtimeCaching: [
+    {
+      urlPattern: /^favicon.ico/,
+      handler: 'staleWhileRevalidate'
+    },
+    {
+      urlPattern: new RegExp('^https://cdn.glitch.com/'),
+      handler: 'staleWhileRevalidate'
+    },
+    {
+      urlPattern: new RegExp('^https://buttons.github.io/'),
+      handler: 'staleWhileRevalidate'
+    },
+    {
+      urlPattern: new RegExp('^https://api.github.com/'),
+      handler: 'staleWhileRevalidate'
+    }
+  ]
+}).then(() => {
+  const port = process.env.PORT || 5000
+  const devServer = budo('index.js', {
+    port,
+    browserify: {
+      transform: [
+        brfs,
+        [sheetify, {transform: ['sheetify-nested']}]
+      ]
+    },
+    middleware: [
+      express.static('img'),
+      router
+    ],
+    dir: ['.', 'static', 'generated']
+  })
+  devServer.on('connect', event => {
+    console.log('Listening on', event.uri)
+    attachWebsocket(event.server)
+  })
 })
-devServer.on('connect', event => {
-  console.log('Listening on', event.uri)
-  attachWebsocket(event.server)
-})
+
+
