@@ -17,14 +17,15 @@
     "pretty-hash": "^1.0.1",
     "random-access-idb": "^1.0.4",
     "random-access-memory": "^2.4.0",
-    "sheetify": "^7.3.0",
+    "sheetify": "^7.3.2",
     "to-buffer": "^1.1.0",
     "websocket-stream": "^5.1.2",
     "nanocomponent": "^6.5.1",
     "monotonic-timestamp-base36": "^1.0.0",
     "clipboard-copy": "^2.0.0",
     "dat-colors": "^3.5.1",
-    "sheetify-nested": "^1.0.2"
+    "sheetify-nested": "^1.0.2",
+    "thunky": "^1.0.2"
   },
   "engines": {
     "node": "9.x"
