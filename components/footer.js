@@ -7,6 +7,7 @@ const prefix = css`
     margin-top: 0.2rem;
     margin-left: 1rem;
     margin-right: 1rem;
+    margin-bottom: 2rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;

@@ -367,7 +367,7 @@ function shoppingListView (state, emit) {
   const noItems = !state.loading && state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
   return html`
     <body class=${prefix}>
-      ${header()}
+      ${header(state)}
       <section class="content">
         <div class="title">
           <h1>${state.title}</h1>
