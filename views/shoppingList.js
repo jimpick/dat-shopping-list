@@ -222,6 +222,7 @@ function shoppingListView (state, emit) {
           Loading...
           <nav class="bottomNav">
             <a href="/" class="link">Home</a>
+            <a href="/" class="delete" onclick=${deleteList}>Delete List</a>
           </nav>
         </section>
         ${footer(state)}
@@ -264,10 +265,11 @@ function shoppingListView (state, emit) {
           </div>
         `
         function copyToClipboard () {
-          copy(localKey)
-          alert('"Local Key" copied to clipboard')
-          state.localKeyCopied = true
-          emit('render')
+          copy(localKey).then(() => {
+            alert('"Local Key" copied to clipboard')
+            state.localKeyCopied = true
+            emit('render')
+          })
         }
       }
       let noAuth
@@ -300,7 +302,7 @@ function shoppingListView (state, emit) {
           </p>
           <div class="writerInputs" onclick=${e => e.stopPropagation()}>
             <div>Add a writer:</div> 
-            <input type="text" placeholder="Writer Local Key">
+            <input type="text" placeholder="Writer Local Key" spellcheck="false">
             ${button.submit('Authorize')}
           </div>
         </form>
@@ -390,8 +392,9 @@ function shoppingListView (state, emit) {
   `
 
   function copyUrl (event) {
-    copy(document.location.href)
-    alert('Shopping list URL copied to clipboard')
+    copy(document.location.href).then(() => {
+      alert('Shopping list URL copied to clipboard')
+    })
   }
   
   function deleteList (event) {

@@ -26,7 +26,7 @@ function createView (state, emit) {
           Enter a name for your new shopping list
         </h2>
         <form onsubmit=${submit}>
-          <input type="text" autocapitalize="off" autofocus>
+          <input type="text" autofocus>
           <p>
             ${button.submit('Submit')}
           </p>

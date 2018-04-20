@@ -165,7 +165,9 @@ function store (state, emitter) {
         const file = fileList.shift()
         if (!file) return cb()
         archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
+          if (err) throw err
           try {
+            // console.log('Jim readShoppingListFiles', file, contents)
             const item = JSON.parse(contents)
             item.file = file
             shoppingList.push(item)
@@ -243,8 +245,12 @@ function store (state, emitter) {
     console.log('authorize', writerKey)
     const archive = state.archive
     archive.db.authorize(toBuffer(writerKey, 'hex'), err => {
-      if (err) throw err
-      console.log(`Authorized.`)
+      if (err) {
+        alert('Error while authorizing: ' + err.message)
+      } else {
+        console.log(`Authorized.`)
+        alert('Authorized new writer')
+      }
       emitter.emit('render')
     })
   })
