@@ -83,7 +83,7 @@ function attachWebsocket (server) {
 }
 
 workboxBuild.generateSW({
-  swDest: './generated/sw.js',
+  swDest: './.data/sw.js',
   importWorkboxFrom: 'local',
   navigateFallback: '/',
   navigateFallbackWhitelist: [/^\/doc/],
@@ -129,7 +129,7 @@ workboxBuild.generateSW({
       express.static('img'),
       router
     ],
-    dir: ['.', 'static', 'generated']
+    dir: ['.', 'static', '.data']
   })
   devServer.on('connect', event => {
     console.log('Listening on', event.uri)
