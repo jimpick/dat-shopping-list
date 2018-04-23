@@ -1,0 +1,17 @@
+{
+  "name": "Dat Shopping List",
+  "short_name": "Dat Shopping",
+  "description": "A demo of dat multiwriter support (hyperdrive+hyperdb) in a PWA",
+  "lang": "en-US",
+  "start_url": "/?utm_source=homescreen",
+  "display": "standalone",
+  "theme_color": "#2ACA4B",
+  "background_color": "#FFFFFF",
+  "icons": [
+    {
+      "src": "/img/dat-hexagon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

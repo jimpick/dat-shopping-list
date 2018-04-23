@@ -367,6 +367,7 @@ function shoppingListView (state, emit) {
     event.preventDefault()
   }
   const noItems = !state.loading && state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
+  const debugTools = html`<div>Debut tools: <a href="#" class="link" onclick=${downloadZip}>Download Zip</a></div>`
   return html`
     <body class=${prefix}>
       ${header(state)}
@@ -388,6 +389,7 @@ function shoppingListView (state, emit) {
         </nav>
       </section>
       ${footer(state)}
+      ${debugTools}
     </body>
   `
 
@@ -402,6 +404,11 @@ function shoppingListView (state, emit) {
     if (confirm) {
       emit('deleteCurrentDoc')
     }
+    event.preventDefault()
+  }
+
+  function downloadZip (event) {
+    emit('downloadZip')
     event.preventDefault()
   }
 }

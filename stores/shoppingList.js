@@ -5,6 +5,8 @@ const toBuffer = require('to-buffer')
 const hyperdrive = require('hyperdrive')
 const crypto = require('hypercore/lib/crypto')
 const newId = require('monotonic-timestamp-base36')
+const dumpWriters = require('../lib/dumpWriters')
+const downloadZip = require('../lib/downloadZip')
 
 module.exports = store
 
@@ -36,20 +38,14 @@ function store (state, emitter) {
       archive.ready(() => {
         console.log('hyperdrive ready')
         console.log('Local key:', archive.db.local.key.toString('hex'))
-        console.log('Writers:')
-        archive.db._writers.forEach(writer => {
-          console.log('  ', writer._feed.key.toString('hex'), writer._feed.length)
-        })
+        dumpWriters(archive)
         state.archive = archive
         state.key = archive.key
         connectToGateway(archive)
         readShoppingList()
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
-          console.log('Writers:')
-          archive.db._writers.forEach(writer => {
-            console.log('  ', writer._feed.key.toString('hex'), writer._feed.length)
-          })
+          dumpWriters(archive)
           readShoppingList()
         })
       })
@@ -259,5 +255,10 @@ function store (state, emitter) {
     state.writeStatusCollapsed = !state.writeStatusCollapsed
     localStorage.setItem('writeStatusCollapsed', state.writeStatusCollapsed)
     emitter.emit('render')
+  })
+  
+  emitter.on('downloadZip', () => {
+    console.log('Download zip')
+    downloadZip(state.archive)
   })
 }
