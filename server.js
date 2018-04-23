@@ -1,5 +1,6 @@
 const budo = require('budo')
 const express = require('express')
+const compression = require('compression')
 const expressWebSocket = require('express-ws')
 const websocketStream = require('websocket-stream/stream')
 const pump = require('pump')
@@ -9,12 +10,26 @@ const hyperdrive = require('hyperdrive')
 const hyperdiscovery = require('hyperdiscovery')
 const sheetify = require('sheetify')
 const brfs = require('brfs')
-const prettyHash = require('pretty-hash')
 const workboxBuild = require('workbox-build')
+const gm = require('gm').subClass({imageMagick: true})
+const mkdirp = require('mkdirp')
+const dumpWriters = require('./lib/dumpWriters')
 
 require('events').prototype._maxListeners = 100
 
 const router = express.Router()
+
+function redirectToHttps (req, res, next) {
+  // Glitch has a proxy
+  const xfpHeader = req.headers['x-forwarded-proto']
+  if (!xfpHeader.match(/^https/)) {
+    const redirectUrl = 'https://' + req.headers['host'] + req.url
+    res.writeHead(301, {Location: redirectUrl})
+    res.end()
+  } else {
+    next()
+  }
+}
 
 function serveIndex (req, res, next) {
   req.url = '/index.html'
@@ -50,11 +65,7 @@ function attachWebsocket (server) {
         })
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
-          console.log('Writers:')
-          archive.db._writers.forEach(writer => {
-          console.log('  ', writer._feed.key.toString('hex'), writer._feed.length)
-        })
-
+          dumpWriters(archive)
         })
       })
     }
@@ -82,59 +93,96 @@ function attachWebsocket (server) {
   })
 }
 
-workboxBuild.generateSW({
-  swDest: './.data/sw.js',
-  importWorkboxFrom: 'local',
-  navigateFallback: '/',
-  navigateFallbackWhitelist: [/^\/doc/],
-  globDirectory: '.',
-  globPatterns: ['index.html', 'index.js', 'static\/**\/*.svg'],
-  modifyUrlPrefix: {
-    'static': ''
-  },
-  templatedUrls: {
-    '/': [ 'views/main.js' ],
-    '/create': [ 'views/create.js' ],
-    '/doc': [ 'views/shoppingList.js' ]
-  },
-  runtimeCaching: [
-    {
-      urlPattern: /^favicon.ico/,
-      handler: 'staleWhileRevalidate'
+function makeServiceWorker () {
+  const promise = workboxBuild.generateSW({
+    swDest: './.data/sw.js',
+    importWorkboxFrom: 'local',
+    navigateFallback: '/',
+    navigateFallbackWhitelist: [/^\/doc/],
+    globDirectory: '.',
+    globPatterns: ['index.html', 'index.js', 'static\/**\/*.svg', '.data\/**\/*.png'],
+    modifyUrlPrefix: {
+      'static': '',
+      '.data': ''
     },
-    {
-      urlPattern: new RegExp('^https://cdn.glitch.com/'),
-      handler: 'staleWhileRevalidate'
+    templatedUrls: {
+      '/': [ 'views/main.js' ],
+      '/create': [ 'views/create.js' ],
+      '/doc': [ 'views/shoppingList.js' ]
     },
-    {
-      urlPattern: new RegExp('^https://buttons.github.io/'),
-      handler: 'staleWhileRevalidate'
-    },
-    {
-      urlPattern: new RegExp('^https://api.github.com/'),
-      handler: 'staleWhileRevalidate'
-    }
-  ]
-}).then(() => {
-  const port = process.env.PORT || 5000
-  const devServer = budo('index.js', {
-    port,
-    browserify: {
-      transform: [
-        brfs,
-        [sheetify, {transform: ['sheetify-nested']}]
-      ]
-    },
-    middleware: [
-      express.static('img'),
-      router
-    ],
-    dir: ['.', 'static', '.data']
+    runtimeCaching: [
+      {
+        urlPattern: /^favicon.ico/,
+        handler: 'staleWhileRevalidate'
+      },
+      {
+        urlPattern: new RegExp('^https://cdn.glitch.com/'),
+        handler: 'staleWhileRevalidate'
+      },
+      {
+        urlPattern: new RegExp('^https://buttons.github.io/'),
+        handler: 'staleWhileRevalidate'
+      },
+      {
+        urlPattern: new RegExp('^https://api.github.com/'),
+        handler: 'staleWhileRevalidate'
+      }
+    ]
   })
-  devServer.on('connect', event => {
-    console.log('Listening on', event.uri)
-    attachWebsocket(event.server)
-  })
-})
+  return promise
+}
 
+function makePngFromSvg(name, size) {
+  const promise = new Promise((resolve, reject) => {
+    gm(`./static/img/${name}.svg`)
+      .resize(size, size)
+      .write(`./.data/img/${name}-${size}.png`, err => {
+        if (err) {
+          return reject(err)
+        }
+        resolve()
+      })
+  })
+  return promise
+}
+
+mkdirp.sync('./.data/img')
+
+makeServiceWorker()
+  .then(makePngFromSvg('dat-hexagon', 16))
+  .then(makePngFromSvg('dat-hexagon', 32))
+  .then(makePngFromSvg('dat-hexagon', 96))
+  .then(makePngFromSvg('dat-hexagon', 120))
+  .then(makePngFromSvg('dat-hexagon', 152))
+  .then(makePngFromSvg('dat-hexagon', 167))
+  .then(makePngFromSvg('dat-hexagon', 180))
+  .then(makePngFromSvg('dat-hexagon', 192))
+  .then(makePngFromSvg('dat-hexagon', 196))
+  .then(makePngFromSvg('dat-hexagon', 512))
+  .then(() => {
+    const port = process.env.PORT || 5000
+    const devServer = budo('index.js', {
+      port,
+      browserify: {
+        transform: [
+          brfs,
+          [sheetify, {transform: ['sheetify-nested']}]
+        ]
+      },
+      middleware: [
+        compression(),
+        redirectToHttps,
+        express.static('img'),
+        router
+      ],
+      dir: ['.', 'static', '.data']
+    })
+    devServer.on('connect', event => {
+      console.log('Listening on', event.uri)
+      attachWebsocket(event.server)
+    })
+  })
+  .catch(err => {
+    console.error('Exception', err)
+  })
 
