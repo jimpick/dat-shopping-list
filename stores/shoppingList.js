@@ -8,6 +8,8 @@ const newId = require('monotonic-timestamp-base36')
 const dumpWriters = require('../lib/dumpWriters')
 const downloadZip = require('../lib/downloadZip')
 
+require('events').prototype._maxListeners = 100
+
 module.exports = store
 
 function store (state, emitter) {

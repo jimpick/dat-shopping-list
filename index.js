@@ -15,8 +15,8 @@ css('./index.css')
 
 const app = choo()
 
-// app.use(require('choo-service-worker/clear')())
-app.use(chooServiceWorker())
+app.use(require('choo-service-worker/clear')())
+// app.use(chooServiceWorker())
 
 app.use(state => {
   state.glitchAppName = 'dat-multiwriter-web'

@@ -208,12 +208,22 @@ const prefix = css`
         float: right;
       }
     }
+
+    .debugTools {
+      margin: 2rem;
+    }
   }
 `
 
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
+  const debugTools = html`
+    <div class="debugTools">
+      Debug tools: ${' '}
+      <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
+    </div>
+  `  
   if (state.loading ) {
     return html`
       <body class=${prefix}>
@@ -226,6 +236,7 @@ function shoppingListView (state, emit) {
           </nav>
         </section>
         ${footer(state)}
+        ${debugTools}
       </body>
     `
   }
@@ -329,9 +340,10 @@ function shoppingListView (state, emit) {
   const items = state.shoppingList
     .sort((a, b) => a.dateAdded - b.dateAdded)
     .map(item => {
+      const id = item.file.replace('.json', '')
       return html`
         <li tabindex="0" role="button" onclick=${toggle.bind(item)} onkeydown=${keydown}>
-          <input type="checkbox" checked=${item.bought} tabindex="-1">
+          <input type="checkbox" checked=${item.bought} tabindex="-1" id=${id}>
           <div class="text" data-bought=${item.bought}>${item.name}</div>
           <div class="delete" onclick=${remove.bind(item)} tabindex="0">${raw('&#x00d7;')}</div>
         </li>
@@ -354,7 +366,7 @@ function shoppingListView (state, emit) {
 
     })
   items.push(html`
-    <li class="addGroceryItem">
+    <li class="addGroceryItem" id="addItem">
       <form onsubmit=${submitAddItem}>
         <input type="text">
         ${button.submit('Add')}
@@ -367,7 +379,6 @@ function shoppingListView (state, emit) {
     event.preventDefault()
   }
   const noItems = !state.loading && state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
-  const debugTools = html`<div>Debut tools: <a href="#" class="link" onclick=${downloadZip}>Download Zip</a></div>`
   return html`
     <body class=${prefix}>
       ${header(state)}
