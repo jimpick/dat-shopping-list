@@ -63,9 +63,12 @@ function attachWebsocket (server) {
         sw.on('connection', (peer, info) => {
           console.log('Swarm connection', info)
         })
-        archive.db.watch(() => {
+        const watcher = archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
           dumpWriters(archive)
+        })
+        watcher.on('error', err => {
+          console.error('Watcher error', err)
         })
       })
     }
