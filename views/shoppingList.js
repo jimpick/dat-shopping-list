@@ -28,6 +28,14 @@ const prefix = css`
       }
     }
 
+    .error {
+      padding: 1rem;
+      border: 2px solid red;
+      border-radius: 1rem;
+      text-align: center;
+      margin: 1rem;
+    }
+
     #writeStatus {
       box-shadow: 0 0 10px rgba(0,0,0,.15);
       padding: 0.7rem;
@@ -208,13 +216,41 @@ const prefix = css`
         float: right;
       }
     }
+
+    .debugTools {
+      margin: 2rem;
+    }
   }
 `
 
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
-  if (state.loading ) {
+  const debugTools = html`
+    <div class="debugTools">
+      Debug tools: ${' '}
+      <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
+    </div>
+  `  
+  if (state.error) {
+    return html`
+      <body class=${prefix}>
+        ${header()}
+        <section class="content">
+          <div class="error">
+            ${state.error}
+          </div>
+          <nav class="bottomNav">
+            <a href="/" class="link">Home</a>
+            <a href="/" class="delete" onclick=${deleteList}>Delete List</a>
+          </nav>
+        </section>
+        ${footer(state)}
+        ${debugTools}
+      </body>
+    `
+  }
+  if (state.loading) {
     return html`
       <body class=${prefix}>
         ${header()}
@@ -226,6 +262,7 @@ function shoppingListView (state, emit) {
           </nav>
         </section>
         ${footer(state)}
+        ${debugTools}
       </body>
     `
   }
@@ -329,9 +366,10 @@ function shoppingListView (state, emit) {
   const items = state.shoppingList
     .sort((a, b) => a.dateAdded - b.dateAdded)
     .map(item => {
+      const id = item.file.replace('.json', '')
       return html`
         <li tabindex="0" role="button" onclick=${toggle.bind(item)} onkeydown=${keydown}>
-          <input type="checkbox" checked=${item.bought} tabindex="-1">
+          <input type="checkbox" checked=${item.bought} tabindex="-1" id=${id}>
           <div class="text" data-bought=${item.bought}>${item.name}</div>
           <div class="delete" onclick=${remove.bind(item)} tabindex="0">${raw('&#x00d7;')}</div>
         </li>
@@ -354,7 +392,7 @@ function shoppingListView (state, emit) {
 
     })
   items.push(html`
-    <li class="addGroceryItem">
+    <li class="addGroceryItem" id="addItem">
       <form onsubmit=${submitAddItem}>
         <input type="text">
         ${button.submit('Add')}
@@ -366,8 +404,7 @@ function shoppingListView (state, emit) {
     if (name !== '') emit('addItem', name)
     event.preventDefault()
   }
-  const noItems = !state.loading && state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
-  const debugTools = html`<div>Debut tools: <a href="#" class="link" onclick=${downloadZip}>Download Zip</a></div>`
+  const noItems = state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
   return html`
     <body class=${prefix}>
       ${header(state)}
