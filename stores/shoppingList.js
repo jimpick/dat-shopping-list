@@ -1,12 +1,11 @@
 const rai = require('random-access-idb')
-const websocket = require('websocket-stream')
-const pump = require('pump')
 const toBuffer = require('to-buffer')
 const hyperdrive = require('hyperdrive')
 const crypto = require('hypercore/lib/crypto')
 const newId = require('monotonic-timestamp-base36')
 const dumpWriters = require('../lib/dumpWriters')
 const downloadZip = require('../lib/downloadZip')
+const connectToGateway = require('../lib/websocketGateway')
 
 require('events').prototype._maxListeners = 100
 
@@ -21,6 +20,7 @@ function store (state, emitter) {
   emitter.on('navigate', updateDoc)
   
   function updateDoc () {
+    state.error = null
     state.authorized = null
     state.shoppingList = []
     state.localKeyCopied = false
@@ -43,37 +43,15 @@ function store (state, emitter) {
         dumpWriters(archive)
         state.archive = archive
         state.key = archive.key
-        connectToGateway(archive)
+        if (state.cancelGatewayReplication) state.cancelGatewayReplication()
+        state.cancelGatewayReplication = connectToGateway(archive)
         readShoppingList()
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
           dumpWriters(archive)
           readShoppingList()
         })
-      })
-      
-      function connectToGateway(archive) {
-        const key = archive.key.toString('hex')
-        const host = document.location.host
-        const proto = document.location.protocol === 'https:' ? 'wss' : 'ws'
-        const url = `${proto}://${host}/archive/${key}`
-        console.log('connectToGateway', key)
-
-        function connectWebsocket () {
-          console.log('Connecting websocket', url)
-          const stream = websocket(url)
-          pump(
-            stream,
-            archive.replicate({encrypt: false, live: true}),
-            stream,
-            err => {
-              console.log('Pipe finished', err && err.message)
-              setTimeout(connectWebsocket, 5000)
-            }
-          )
-        }
-        connectWebsocket()
-      }
+      })      
     }
   }
 
@@ -127,9 +105,21 @@ function store (state, emitter) {
     const archive = state.archive
     const shoppingList = []
     archive.readdir('/shopping-list', (err, fileList) => {
+      if (err) {
+        console.log('Error', err)
+        state.error = 'Error loading shopping list'
+        emitter.emit('render')
+        return
+      }
       console.log('Shopping list files:', fileList.length)
       readTitleFromDatJson(title => {
-        readShoppingListFiles(() => {
+        readShoppingListFiles(err => {
+          if (err) {
+            console.log('Error', err)
+            state.error = 'Error loading shopping list'
+            emitter.emit('render')
+            return
+          }
           console.log('Done reading files.', title)
           updateAuthorized(err => {
             if (err) throw err
@@ -163,7 +153,7 @@ function store (state, emitter) {
         const file = fileList.shift()
         if (!file) return cb()
         archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
-          if (err) throw err
+          if (err) return cb(err)
           try {
             // console.log('Jim readShoppingListFiles', file, contents)
             const item = JSON.parse(contents)
