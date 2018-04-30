@@ -1,4 +1,3 @@
-const Component = require('choo/component')
 const html = require('choo/html')
 const css = require('sheetify')
 

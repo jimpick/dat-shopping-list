@@ -32,20 +32,26 @@ const prefix = css`
       border-radius: 0.5rem;
       margin: 0 0 0.5rem 0;
       padding: 0 0.5rem;
-      line-height: 3rem;
+      min-height: 3rem;
       position: relative;
       cursor: pointer;
       font-size: 1.2rem;
       background-color: var(--color-white);
-    }
-    li span {
-      font-size: 12px;
-      font-family: monospace;
-      line-height: 1rem;
-      position: absolute;
-      top: 0.3rem;
-      right: 0.3rem;
-      pointer-events: none;
+      display: flex;
+
+      .link {
+        margin: 1rem 0.5rem;
+      }
+
+      span {
+        font-size: 12px;
+        font-family: monospace;
+        line-height: 1rem;
+        position: absolute;
+        top: 0.1rem;
+        right: 0.3rem;
+        pointer-events: none;
+      }
     }
     .solo {
       background-image: url(/img/bg-landing-page.svg);

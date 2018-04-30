@@ -73,7 +73,7 @@ function header (state) {
       <a href="/">
         <img src="/img/dat-hexagon.svg" alt="Dat Project Logo">
         <span class="title">
-          <span class="first-word">Dat</span> Shopping List
+          <span class="first-word">Dat</span> Shopping List 6
         </span>
       </a>
       ${networkStatus}
