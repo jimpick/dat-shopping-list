@@ -6,6 +6,7 @@ const newId = require('monotonic-timestamp-base36')
 const dumpWriters = require('../lib/dumpWriters')
 const downloadZip = require('../lib/downloadZip')
 const connectToGateway = require('../lib/websocketGateway')
+const customAlert = require('../components/customAlert')
 
 require('events').prototype._maxListeners = 100
 
@@ -20,6 +21,11 @@ function store (state, emitter) {
   emitter.on('navigate', updateDoc)
   
   function updateDoc () {
+    emitter.once('render', () => {
+      document.body.scrollIntoView(true)
+      // Do it again for mobile Safari
+      setTimeout(() => document.body.scrollIntoView(true), 200)
+    })
     state.error = null
     state.authorized = null
     state.shoppingList = []
@@ -231,13 +237,17 @@ function store (state, emitter) {
 
   emitter.on('authorize', writerKey => {
     console.log('authorize', writerKey)
+    if (!writerKey.match(/^[0-9a-f]{32}$/)) {
+      customAlert.show('Key must be a 32 character hex value')
+      return
+    }
     const archive = state.archive
     archive.db.authorize(toBuffer(writerKey, 'hex'), err => {
       if (err) {
-        alert('Error while authorizing: ' + err.message)
+        customAlert.show('Error while authorizing: ' + err.message)
       } else {
         console.log(`Authorized.`)
-        alert('Authorized new writer')
+        customAlert.show('Authorized new writer')
       }
       emitter.emit('render')
     })

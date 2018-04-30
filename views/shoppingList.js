@@ -6,6 +6,7 @@ const prettyHash = require('pretty-hash')
 const header = require('../components/header')
 const button = require('../components/button')
 const footer = require('../components/footer')
+const customAlert = require('../components/customAlert')
 
 const prefix = css`
   :host {
@@ -22,7 +23,7 @@ const prefix = css`
         font-size: 12px;
         font-family: monospace;
         position: absolute;
-        top: 0;
+        top: -0.6rem;
         right: 0;
         cursor: pointer;
       }
@@ -124,15 +125,22 @@ const prefix = css`
         
         .writerInputs {
           display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          font-size: 16px;
+
+          div {
+            margin-right: 0.4rem;
+          }
 
           input[type="text"] {
+            font-size: 16px;
             flex: 1;
-            margin-left: 0.4rem;
+            margin-right: 0.4rem;
           }
 
           input[type="submit"] {
-            font-size: 0.7rem;
-            margin-left: 0.4rem;
+            font-size: 16px;
             padding: 0.1rem 0.5rem;
             font-weight: 400;
           }
@@ -151,7 +159,7 @@ const prefix = css`
       border-radius: 0.5rem;
       margin: 0 0 0.5rem 0;
       padding: 0 0.5rem;
-      height: 3rem;
+      min-height: 3rem;
       cursor: pointer;
       font-size: 1.2rem;
       display: flex;
@@ -171,6 +179,7 @@ const prefix = css`
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin: 0.5rem;
       }
 
       .text[data-bought="true"] {
@@ -183,7 +192,7 @@ const prefix = css`
         font-weight: 900;
         color: var(--color-green);
         flex: 0 0;
-        margin: 0 0.5rem;
+        padding: 0.6rem 0.6rem;
       }
 
       &.addGroceryItem {
@@ -226,12 +235,15 @@ const prefix = css`
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
+  const debugTools = null
+  /*
   const debugTools = html`
     <div class="debugTools">
       Debug tools: ${' '}
       <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
     </div>
-  `  
+  `
+  */
   if (state.error) {
     return html`
       <body class=${prefix}>
@@ -303,7 +315,7 @@ function shoppingListView (state, emit) {
         `
         function copyToClipboard () {
           copy(localKey).then(() => {
-            alert('"Local Key" copied to clipboard')
+            customAlert.show('"Local Key" copied to clipboard')
             state.localKeyCopied = true
             emit('render')
           })
@@ -354,7 +366,7 @@ function shoppingListView (state, emit) {
             raw('&#x25bc; Expand') : raw('&#x25b2; Collapse')
     writeStatus = html`
       <section id="writeStatus" onclick=${() => emit('toggleWriteStatusCollapsed')}>
-        <div class="collapseExpand">
+        <div class="collapseExpand" onkeydown=${keydown} tabindex="0">
           ${collapseExpand}
         </div>
         <div>${sourceCopy}</div>
@@ -383,13 +395,6 @@ function shoppingListView (state, emit) {
         emit('remove', this.file)
         event.stopPropagation()
       }
-      
-      function keydown (event) {
-        if (event.key === ' ' || event.key === 'Enter') {
-          event.target.click()
-        }
-      }
-
     })
   items.push(html`
     <li class="addGroceryItem" id="addItem">
@@ -403,6 +408,7 @@ function shoppingListView (state, emit) {
     const name = event.target.querySelector('input').value.trim()
     if (name !== '') emit('addItem', name)
     event.preventDefault()
+    event.target.scrollIntoView()
   }
   const noItems = state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
   return html`
@@ -411,7 +417,7 @@ function shoppingListView (state, emit) {
       <section class="content">
         <div class="title">
           <h1>${state.title}</h1>
-          <div class="hash" onclick=${copyUrl}>
+          <div class="hash" onclick=${copyUrl} onkeydown=${keydown} tabindex="0">
             ${prettyHash(state.key)}
           </div>
         </div>
@@ -427,12 +433,13 @@ function shoppingListView (state, emit) {
       </section>
       ${footer(state)}
       ${debugTools}
+      ${customAlert.alertBox(state, emit)}
     </body>
   `
 
   function copyUrl (event) {
     copy(document.location.href).then(() => {
-      alert('Shopping list URL copied to clipboard')
+      customAlert.show('Shopping list URL copied to clipboard')
     })
   }
   
@@ -448,4 +455,11 @@ function shoppingListView (state, emit) {
     emit('downloadZip')
     event.preventDefault()
   }
+
+  function keydown (event) {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.target.click()
+    }
+  }
+
 }
