@@ -237,8 +237,8 @@ function store (state, emitter) {
 
   emitter.on('authorize', writerKey => {
     console.log('authorize', writerKey)
-    if (!writerKey.match(/^[0-9a-f]{32}$/)) {
-      customAlert.show('Key must be a 32 character hex value')
+    if (!writerKey.match(/^[0-9a-f]{64}$/)) {
+      customAlert.show('Key must be a 64 character hex value')
       return
     }
     const archive = state.archive
