@@ -3,6 +3,7 @@ const express = require('express')
 const compression = require('compression')
 const expressWebSocket = require('express-ws')
 const nocache = require('nocache')
+const hsts = require('hsts')
 const websocketStream = require('websocket-stream/stream')
 const pump = require('pump')
 const through2 = require('through2')
@@ -187,13 +188,18 @@ makeServiceWorker()
         ]
       },
       middleware: [
+        hsts({maxAge: 10886400}),
         compression(),
         serviceWorkerNoCache,
         redirectToHttps,
         express.static('img'),
         router
       ],
-      dir: ['.', 'static', '.data']
+      dir: ['.', 'static', '.data'],
+      staticOptions: {
+        cacheControl: true,
+        maxAge: 60 * 60 * 1000 // one hour
+      }
     })
     devServer.on('connect', event => {
       console.log('Listening on', event.uri)

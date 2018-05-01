@@ -18,6 +18,12 @@ const prefix = css`
 module.exports = createView
 
 function createView (state, emit) {
+  emit('DOMTitleChange', 'Dat Shopping List - Create')
+  const input = html`<input type="text" autofocus>`
+  input.isSameNode = function (target) {
+    return (target && target.nodeName && target.nodeName === 'INPUT')
+  }
+
   return html`
     <body class=${prefix}>
       ${header(state)}
@@ -26,7 +32,7 @@ function createView (state, emit) {
           Enter a name for your new shopping list
         </h2>
         <form onsubmit=${submit}>
-          <input type="text" autofocus>
+          ${input}
           <p>
             ${button.submit('Submit')}
           </p>
@@ -38,8 +44,10 @@ function createView (state, emit) {
   function submit (event) {
     const docName = event.target.querySelector('input').value
     if (docName) {
-      const button = event.target.querySelector('button')
-      button.prop('disabled', true)
+      const textInput = event.target.querySelector('input[type="text"]')
+      textInput.setAttribute('disabled', 'disabled')
+      const submitButton = event.target.querySelector('input[type="submit"]')
+      submitButton.setAttribute('disabled', 'disabled')
       emit('createDoc', docName)
     }
     event.preventDefault()
