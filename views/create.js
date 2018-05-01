@@ -38,8 +38,10 @@ function createView (state, emit) {
   function submit (event) {
     const docName = event.target.querySelector('input').value
     if (docName) {
+      const button = event.target.querySelector('button')
+      button.prop('disabled', true)
       emit('createDoc', docName)
-    }    
+    }
     event.preventDefault()
   }
 }
