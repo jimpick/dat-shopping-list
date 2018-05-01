@@ -2,6 +2,7 @@ const budo = require('budo')
 const express = require('express')
 const compression = require('compression')
 const expressWebSocket = require('express-ws')
+const nocache = require('nocache')
 const websocketStream = require('websocket-stream/stream')
 const pump = require('pump')
 const through2 = require('through2')
@@ -18,6 +19,19 @@ const dumpWriters = require('./lib/dumpWriters')
 require('events').prototype._maxListeners = 100
 
 const router = express.Router()
+
+const nocacheMiddleware = nocache()
+
+function serviceWorkerNoCache (req, res, next) {
+  if (
+    req.url === '/' ||
+    req.url === '/sw.js' ||
+    req.url === '/index.js'
+  ) {
+    return nocacheMiddleware(req, res, next)
+  }
+  next()
+}
 
 function redirectToHttps (req, res, next) {
   // Glitch has a proxy
@@ -100,22 +114,22 @@ function makeServiceWorker () {
   const promise = workboxBuild.generateSW({
     swDest: './.data/sw.js',
     importWorkboxFrom: 'local',
+    skipWaiting: true,
+    clientsClaim: true,
     navigateFallback: '/',
     navigateFallbackWhitelist: [/^\/doc/],
     globDirectory: '.',
-    globPatterns: ['index.html', 'index.js', 'static\/**\/*.svg', '.data\/**\/*.png'],
+    globPatterns: ['index.html', 'static\/**\/*.svg', '.data\/**\/*.png'],
     modifyUrlPrefix: {
       'static': '',
       '.data': ''
     },
     templatedUrls: {
-      '/': [ 'views/main.js' ],
-      '/create': [ 'views/create.js' ],
-      '/doc': [ 'views/shoppingList.js' ]
+      '/': [ 'views/main.js' ]
     },
     runtimeCaching: [
       {
-        urlPattern: /^favicon.ico/,
+        urlPattern: /\/index.js$/,
         handler: 'staleWhileRevalidate'
       },
       {
@@ -174,6 +188,7 @@ makeServiceWorker()
       },
       middleware: [
         compression(),
+        serviceWorkerNoCache,
         redirectToHttps,
         express.static('img'),
         router
