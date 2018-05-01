@@ -210,7 +210,6 @@ const prefix = css`
           }
 
           input[type="submit"] {
-            flex: 0;
             margin-left: 0.6rem;
           }
         }
@@ -235,15 +234,16 @@ const prefix = css`
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
+  emit('DOMTitleChange', 'Dat Shopping List - ' + state.docTitle)
   const debugTools = null
-  /*
-  const debugTools = html`
-    <div class="debugTools">
-      Debug tools: ${' '}
-      <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
-    </div>
-  `
-  */
+  if (state.devMode) {
+    const debugTools = html`
+      <div class="debugTools">
+        Debug tools: ${' '}
+        <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
+      </div>
+    `
+  }
   if (state.error) {
     return html`
       <body class=${prefix}>
@@ -339,6 +339,12 @@ function shoppingListView (state, emit) {
     }
     let authForm = null
     if (!state.writeStatusCollapsed && state.authorized) {
+      const localKeyInput = html`
+        <input type="text" placeholder="Writer Local Key" spellcheck="false">
+      `
+      localKeyInput.isSameNode = function (target) {
+        return (target && target.nodeName && target.nodeName === 'INPUT')
+      }
       authForm = html`
         <form onsubmit=${submit}>
           <p class="help">
@@ -351,14 +357,18 @@ function shoppingListView (state, emit) {
           </p>
           <div class="writerInputs" onclick=${e => e.stopPropagation()}>
             <div>Add a writer:</div> 
-            <input type="text" placeholder="Writer Local Key" spellcheck="false">
+            ${localKeyInput}
             ${button.submit('Authorize')}
           </div>
         </form>
       `
       function submit (event) {
-        const writerKey = event.target.querySelector('input').value.trim()
-        if (writerKey !== '') emit('authorize', writerKey)
+        const input = event.target.querySelector('input')
+        const writerKey = input.value.trim()
+        if (writerKey !== '') {
+          emit('authorize', writerKey)
+          input.value = ''
+        }
         event.preventDefault()
       }
     }
@@ -396,17 +406,24 @@ function shoppingListView (state, emit) {
         event.stopPropagation()
       }
     })
+  const addItemInput = html`<input type="text">`
+  addItemInput.isSameNode = function (target) {
+    return (target && target.nodeName && target.nodeName === 'INPUT')
+  }
+
   items.push(html`
     <li class="addGroceryItem" id="addItem">
       <form onsubmit=${submitAddItem}>
-        <input type="text">
+        ${addItemInput}
         ${button.submit('Add')}
       </form>
     </li>
   `)
   function submitAddItem (event) {
-    const name = event.target.querySelector('input').value.trim()
+    const input = event.target.querySelector('input')
+    const name = input.value.trim()
     if (name !== '') emit('addItem', name)
+    input.value = ''
     event.preventDefault()
     event.target.scrollIntoView()
   }
@@ -416,7 +433,7 @@ function shoppingListView (state, emit) {
       ${header(state)}
       <section class="content">
         <div class="title">
-          <h1>${state.title}</h1>
+          <h1>${state.docTitle}</h1>
           <div class="hash" onclick=${copyUrl} onkeydown=${keydown} tabindex="0">
             ${prettyHash(state.key)}
           </div>

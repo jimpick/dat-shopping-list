@@ -7,7 +7,6 @@ function store (state, emitter) {
   
   const ready = thunky(openDocumentsDB)
 
-  
   ready(() => { emitter.emit('render') })
 
   emitter.on('writeNewDocumentRecord', (keyHex, docName) => {
@@ -28,6 +27,9 @@ function store (state, emitter) {
       emitter.emit('pushState', '/')
     })
   })
+  
+  emitter.on('fetchDocLastSync', fetchDocLastSync)
+  emitter.on('updateDocLastSync', updateDocLastSync)
 
   // Store documents in indexedDB
   function openDocumentsDB (cb) {
@@ -112,4 +114,46 @@ function store (state, emitter) {
       cb(err)
     }
   }
+
+  function fetchDocLastSync (key) {
+    state.lastSync = null
+    state.syncedLength = null
+    ready(() => {
+      const db = state.documentsDB
+      const objectStore = db.transaction('documents', 'readwrite')
+        .objectStore('documents')
+      const request = objectStore.get(key)
+      request.onsuccess = function (event) {
+        const data = event.target.result
+        state.lastSync = data.lastSync
+        state.syncedLength = data.syncedLength
+      }
+      request.onerror = function (event) {
+        console.error('fetcgDocLastSync error', event)
+      }
+    })
+  }
+
+
+  function updateDocLastSync ({key, syncedLength}) {
+    ready(() => {
+      const db = state.documentsDB
+      const objectStore = db.transaction('documents', 'readwrite')
+        .objectStore('documents')
+      const request = objectStore.get(key)
+      request.onsuccess = function (event) {
+        const data = event.target.result
+        data.syncedLength = syncedLength
+        data.lastSync = Date.now()
+        const requestUpdate = objectStore.put(data)
+        requestUpdate.onerror = function (event) {
+          console.error('updateDocLastSync update error', event)
+        }
+      }
+      request.onerror = function (event) {
+        console.error('updateDocLastSync error', event)
+      }
+    })
+  }
+
 }

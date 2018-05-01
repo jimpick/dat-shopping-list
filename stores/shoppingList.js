@@ -30,7 +30,7 @@ function store (state, emitter) {
     state.authorized = null
     state.shoppingList = []
     state.localKeyCopied = false
-    state.title = ''
+    state.docTitle = ''
     if (!state.params || !state.params.key) {
       state.archive = null
       state.key = null
@@ -39,6 +39,8 @@ function store (state, emitter) {
     } else {
       const keyHex = state.params.key
       console.log(`Loading ${keyHex}`)
+      state.localFeedLength = null
+      emitter.emit('fetchDocLastSync', keyHex)
       const storage = rai(`doc-${keyHex}`)
       const archive = hyperdrive(storage, keyHex)
       state.loading = true
@@ -50,14 +52,16 @@ function store (state, emitter) {
         state.archive = archive
         state.key = archive.key
         if (state.cancelGatewayReplication) state.cancelGatewayReplication()
-        state.cancelGatewayReplication = connectToGateway(archive)
+        state.cancelGatewayReplication = connectToGateway(
+          archive, updateSyncStatus, updateConnecting
+        )
         readShoppingList()
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
           dumpWriters(archive)
           readShoppingList()
         })
-      })      
+      })
     }
   }
 
@@ -107,6 +111,26 @@ function store (state, emitter) {
     })
   })
   
+  function updateSyncStatus (message) {
+    const {key, connectedPeers, localFeedLength, remoteFeedLength} = message
+    state.connected = !!connectedPeers
+    state.localFeedLength = state.loading ? null : localFeedLength
+    if (state.key && connectedPeers) {
+      state.connecting = false
+      state.syncedLength = remoteFeedLength
+      emitter.emit(
+        'updateDocLastSync',
+        {key, syncedLength: remoteFeedLength}
+      )
+    }
+    state.needToSync = localFeedLength - state.syncedLength
+    emitter.emit('render')
+  }
+  
+  function updateConnecting (connecting) {
+    state.connecting = connecting
+  }
+  
   function readShoppingList () {
     const archive = state.archive
     const shoppingList = []
@@ -130,7 +154,7 @@ function store (state, emitter) {
           updateAuthorized(err => {
             if (err) throw err
             state.loading = false
-            state.title = title
+            state.docTitle = title
             state.shoppingList = shoppingList
             emitter.emit('writeNewDocumentRecord', state.params.key, title)
             emitter.emit('render')
@@ -161,7 +185,6 @@ function store (state, emitter) {
         archive.readFile(`/shopping-list/${file}`, 'utf8', (err, contents) => {
           if (err) return cb(err)
           try {
-            // console.log('Jim readShoppingListFiles', file, contents)
             const item = JSON.parse(contents)
             item.file = file
             shoppingList.push(item)

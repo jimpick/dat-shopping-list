@@ -36,6 +36,8 @@ module.exports = footer
 
 function footer (state) {
   const {glitchAppName, gitHubRepoName} = state
+  const ghButton = null
+  // const ghButton = state.cache(GitHubButton, 'gitHubButton', gitHubRepoName).render()
   return html`
     <footer class=${prefix}>
       <a href="https://glitch.com/edit/#!/${glitchAppName}">
@@ -46,7 +48,7 @@ function footer (state) {
         <img src="https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg"
               alt="Remix on Glitch" />
       </a>
-      ${state.cache(GitHubButton, 'gitHubButton', gitHubRepoName).render()}
+      ${ghButton}
     </footer>
   `
 }

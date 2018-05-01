@@ -21,6 +21,8 @@ app.use(chooServiceWorker())
 app.use(state => {
   state.glitchAppName = 'dat-shopping-list'
   state.gitHubRepoName = 'jimpick/dat-shopping-list'
+  state.devMode = false
+  state.devLabel = 'b'
 })
 app.use(networkStatusStore)
 app.use(documentsStore)
