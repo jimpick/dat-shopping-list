@@ -125,17 +125,11 @@ function makeServiceWorker () {
       '.data': ''
     },
     templatedUrls: {
-      '/': [ 'views/main.js' ],
-      '/create': [ 'views/create.js' ],
-      '/doc': [ 'views/shoppingList.js' ]
+      '/': [ 'views/main.js' ]
     },
     runtimeCaching: [
       {
-        urlPattern: /^favicon.ico/,
-        handler: 'staleWhileRevalidate'
-      },
-      {
-        urlPattern: /^index.js/,
+        urlPattern: /\/index.js$/,
         handler: 'staleWhileRevalidate'
       },
       {
