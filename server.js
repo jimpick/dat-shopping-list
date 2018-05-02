@@ -200,7 +200,9 @@ makeServiceWorker()
       staticOptions: {
         cacheControl: true,
         maxAge: 60 * 60 * 1000 // one hour
-      }
+      },
+      stream: process.stdout,
+      verbose: true
     })
     devServer.on('connect', event => {
       console.log('Listening on', event.uri)
@@ -210,4 +212,3 @@ makeServiceWorker()
   .catch(err => {
     console.error('Exception', err)
   })
-
