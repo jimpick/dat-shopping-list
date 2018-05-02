@@ -74,8 +74,12 @@ function statusDisplay (state) {
   if (!state) return null
   let networkStatus
   let connected
-  let pending = state.localFeedLength - state.syncedLength
-  if (pending <= 0 || isNaN(pending)) pending = null
+  let pendingUpload = state.localUploadLength - state.syncedUploadLength
+  if (pendingUpload <= 0 || isNaN(pendingUpload)) pendingUpload = null
+  if (pendingUpload) pendingUpload = html`<span>${pendingUpload}↑</span>`
+  let pendingDownload = state.localDownloadLength - state.syncedDownloadLength
+  if (pendingDownload <= 0 || isNaN(pendingDownload)) pendingDownload = null
+  if (pendingDownload) pendingDownload = html`<span>${pendingDownload}↓</span>`
   if (state.networkStatus !== undefined) {
     const onlineOffline = state.networkStatus ?
             html`<span class="online">Online</span>` :
@@ -90,26 +94,34 @@ function statusDisplay (state) {
     if (state.connecting) {
       connected = html`
         <span class="connecting">
-          ${state.cache(SvgIcon, 'sync').render(syncIcon)} ${pending}
+          ${state.cache(SvgIcon, 'sync').render(syncIcon)}
+          ${pendingDownload}
+          ${pendingUpload}
         </span>
       `
     } else if (state.connected) {
       connected = html`
         <span class="online">
-          ${state.cache(SvgIcon, 'sync').render(syncIcon)} ${pending}
+          ${state.cache(SvgIcon, 'sync').render(syncIcon)}
+          ${pendingDownload}
+          ${pendingUpload}
         </span>
       `
     } else {
       if (state.networkStatus) {
         connected = html`
           <span class="offline">
-            ${state.cache(SvgIcon, 'syncProblem').render(syncIconProblem)} ${pending}
+            ${state.cache(SvgIcon, 'syncProblem').render(syncIconProblem)}
+            ${pendingDownload}
+            ${pendingUpload}
           </span>
         `
       } else {
         connected = html`
           <span class="offline">
-            ${state.cache(SvgIcon, 'syncDisabled').render(syncIconDisabled)} ${pending}
+            ${state.cache(SvgIcon, 'syncDisabled').render(syncIconDisabled)}
+            ${pendingDownload}
+            ${pendingUpload}
           </span>
         `
       }
