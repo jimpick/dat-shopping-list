@@ -112,18 +112,30 @@ function store (state, emitter) {
   })
   
   function updateSyncStatus (message) {
-    const {key, connectedPeers, localFeedLength, remoteFeedLength} = message
+    const {
+      key,
+      connectedPeers,
+      localUploadLength,
+      remoteUploadLength,
+      localDownloadLength,
+      remoteDownloadLength
+    } = message
     state.connected = !!connectedPeers
-    state.localFeedLength = state.loading ? null : localFeedLength
+    state.localUploadLength = state.loading ? null : localUploadLength
+    state.localDownloadLength = state.loading ? null : localDownloadLength
     if (state.key && connectedPeers) {
       state.connecting = false
-      state.syncedLength = remoteFeedLength
+      state.syncedUploadLength = remoteUploadLength
+      state.syncedDownloadLength = remoteDownloadLength
       emitter.emit(
         'updateDocLastSync',
-        {key, syncedLength: remoteFeedLength}
+        {
+          key,
+          syncedUploadLength: remoteUploadLength,
+          syncedDownloadLength: remoteDownloadLength
+        }
       )
     }
-    state.needToSync = localFeedLength - state.syncedLength
     emitter.emit('render')
   }
   

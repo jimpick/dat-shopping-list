@@ -96,7 +96,6 @@ function store (state, emitter) {
   }
   
   function deleteDoc (key, cb) {
-    console.log('Jim delete', key)
     const db = state.documentsDB
     const request = db.transaction('documents', 'readwrite')
       .objectStore('documents')
@@ -117,7 +116,8 @@ function store (state, emitter) {
 
   function fetchDocLastSync (key) {
     state.lastSync = null
-    state.syncedLength = null
+    state.syncedUploadLength = null
+    state.syncedDownloadLength = null
     ready(() => {
       const db = state.documentsDB
       const objectStore = db.transaction('documents', 'readwrite')
@@ -126,16 +126,16 @@ function store (state, emitter) {
       request.onsuccess = function (event) {
         const data = event.target.result
         state.lastSync = data.lastSync
-        state.syncedLength = data.syncedLength
+        state.syncedUploadLength = data.syncedUploadLength
+        state.syncedDownloadLength = data.syncedDownloadLength
       }
       request.onerror = function (event) {
-        console.error('fetcgDocLastSync error', event)
+        console.error('fetchDocLastSync error', event)
       }
     })
   }
 
-
-  function updateDocLastSync ({key, syncedLength}) {
+  function updateDocLastSync ({key, syncedUploadLength, syncedDownloadLength}) {
     ready(() => {
       const db = state.documentsDB
       const objectStore = db.transaction('documents', 'readwrite')
@@ -143,7 +143,8 @@ function store (state, emitter) {
       const request = objectStore.get(key)
       request.onsuccess = function (event) {
         const data = event.target.result
-        data.syncedLength = syncedLength
+        data.syncedUploadLength = syncedUploadLength
+        data.syncedDownloadLength = syncedDownloadLength
         data.lastSync = Date.now()
         const requestUpdate = objectStore.put(data)
         requestUpdate.onerror = function (event) {
