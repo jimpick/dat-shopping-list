@@ -1,6 +1,6 @@
-# dat-multiwriter-web
+# dat-shopping-list
 
-[https://dat-multiwriter-web.glitch.me/](https://dat-multiwriter-web.glitch.me/)
+[https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/)
 
 # Overview
 
