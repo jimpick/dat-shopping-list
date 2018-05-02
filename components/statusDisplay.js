@@ -17,8 +17,17 @@ const prefix = css`
     position: absolute;
     top: 0.4rem;
     right: 0.4rem;
-    font-weight: 200;
+    font-weight: 300;
     font-size: 0.8rem;
+
+    @media only screen and (max-width : 350px) {
+      font-size: 0.6rem;
+
+      img {
+        width: 0.7rem;
+        height: 0.7rem;
+      }
+    }
 
     .online {
       color: var(--color-green);
@@ -65,12 +74,8 @@ function statusDisplay (state) {
   if (!state) return null
   let networkStatus
   let connected
-  let pendingUpload = state.localUploadLength - state.syncedUploadLength
-  if (pendingUpload <= 0 || isNaN(pendingUpload)) pendingUpload = null
-  if (pendingUpload) pendingUpload = html`<span>${pendingUpload}↑</span>`
-  let pendingDownload = state.localDownloadLength - state.syncedDownloadLength
-  if (pendingDownload <= 0 || isNaN(pendingDownload)) pendingDownload = null
-  if (pendingDownload) pendingDownload = html`<span>${pendingDownload}↓</span>`
+  let pending = state.localFeedLength - state.syncedLength
+  if (pending <= 0 || isNaN(pending)) pending = null
   if (state.networkStatus !== undefined) {
     const onlineOffline = state.networkStatus ?
             html`<span class="online">Online</span>` :
@@ -85,34 +90,26 @@ function statusDisplay (state) {
     if (state.connecting) {
       connected = html`
         <span class="connecting">
-          ${state.cache(SvgIcon, 'sync').render(syncIcon)}
-          ${pendingDownload}
-          ${pendingUpload}
+          ${state.cache(SvgIcon, 'sync').render(syncIcon)} ${pending}
         </span>
       `
     } else if (state.connected) {
       connected = html`
         <span class="online">
-          ${state.cache(SvgIcon, 'sync').render(syncIcon)}
-          ${pendingDownload}
-          ${pendingUpload}
+          ${state.cache(SvgIcon, 'sync').render(syncIcon)} ${pending}
         </span>
       `
     } else {
       if (state.networkStatus) {
         connected = html`
           <span class="offline">
-            ${state.cache(SvgIcon, 'syncProblem').render(syncIconProblem)}
-            ${pendingDownload}
-            ${pendingUpload}
+            ${state.cache(SvgIcon, 'syncProblem').render(syncIconProblem)} ${pending}
           </span>
         `
       } else {
         connected = html`
           <span class="offline">
-            ${state.cache(SvgIcon, 'syncDisabled').render(syncIconDisabled)}
-            ${pendingDownload}
-            ${pendingUpload}
+            ${state.cache(SvgIcon, 'syncDisabled').render(syncIconDisabled)} ${pending}
           </span>
         `
       }

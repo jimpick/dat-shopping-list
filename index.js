@@ -8,6 +8,7 @@ const shoppingListStore = require('./stores/shoppingList')
 
 const mainView = require('./views/main')
 const createView = require('./views/create')
+const addLinkView = require('./views/addLink')
 const shoppingListView = require('./views/shoppingList')
 
 css('dat-colors')
@@ -30,6 +31,7 @@ app.use(shoppingListStore)
 
 app.route('/', mainView)
 app.route('/create', createView)
+app.route('/add-link', addLinkView)
 app.route('/doc/:key', shoppingListView)
 
 app.mount('body')
