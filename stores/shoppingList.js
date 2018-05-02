@@ -120,6 +120,7 @@ function store (state, emitter) {
       localDownloadLength,
       remoteDownloadLength
     } = message
+    if (state.key && key !== state.key.toString('hex')) return
     state.connected = !!connectedPeers
     state.localUploadLength = state.loading ? null : localUploadLength
     state.localDownloadLength = state.loading ? null : localDownloadLength
