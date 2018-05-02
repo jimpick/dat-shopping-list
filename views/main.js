@@ -75,10 +75,19 @@ const prefix = css`
       }
 
     }
+
     .notSolo {
       display: flex;
       justify-content: space-between;
       margin: 0 0.5rem;
+
+      .createButton {
+        margin-right: 0.5rem;
+      }
+
+      .addLinkButton {
+        margin-left: 0.5rem;
+      }
     }
 
     .addLinkButton button {
@@ -135,7 +144,9 @@ function mainView (state, emit) {
           ${documents}
         </ul>
         <div class=${soloCta}>
-          ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+          <div class="createButton">
+            ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+          </div>
           <div class="addLinkButton">
             ${button.button('Have a Link? Paste it Here', () => emit('pushState', '/add-link'))}
           </div>

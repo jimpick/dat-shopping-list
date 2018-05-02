@@ -12,11 +12,11 @@ const prefix = css`
     flex-wrap: wrap;
     align-items: center;
 
-    * {
+    & > * {
       margin: 0.1rem;
     }
 
-    a {
+    & > a {
       margin-right: 0.2rem;
     }
 
@@ -36,8 +36,7 @@ module.exports = footer
 
 function footer (state) {
   const {glitchAppName, gitHubRepoName} = state
-  const ghButton = null
-  // const ghButton = state.cache(GitHubButton, 'gitHubButton', gitHubRepoName).render()
+  const ghButton = state.cache(GitHubButton, 'gitHubButton', gitHubRepoName).render()
   return html`
     <footer class=${prefix}>
       <a href="https://glitch.com/edit/#!/${glitchAppName}">
