@@ -136,7 +136,6 @@ function mainView (state, emit) {
             Make shopping lists and use them online or offline, and sync between multiple
             devices or users.
           </p>
-          Jim! What? This i don't get it. Hopefully this works. 
         </p>
         <header>
           ${docHeader}
