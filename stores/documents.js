@@ -82,7 +82,9 @@ function store (state, emitter) {
       .add({
         key,
         name,
-        dateAdded: Date.now()
+        dateAdded: Date.now(),
+        lastSync: null,
+        syncedLength: 0
       })
     request.onsuccess = function (event) {
       readDocuments(() => {
@@ -96,6 +98,7 @@ function store (state, emitter) {
   }
   
   function deleteDoc (key, cb) {
+    console.log('Jim delete', key)
     const db = state.documentsDB
     const request = db.transaction('documents', 'readwrite')
       .objectStore('documents')
@@ -116,10 +119,7 @@ function store (state, emitter) {
 
   function fetchDocLastSync (key) {
     state.lastSync = null
-    state.syncedUploadLength = null
-    state.syncedDownloadLength = null
-    state.localUploadLength = null
-    state.localDownloadLength = null
+    state.syncedLength = null
     ready(() => {
       const db = state.documentsDB
       const objectStore = db.transaction('documents', 'readwrite')
@@ -127,17 +127,18 @@ function store (state, emitter) {
       const request = objectStore.get(key)
       request.onsuccess = function (event) {
         const data = event.target.result
+        if (!data) return
         state.lastSync = data.lastSync
-        state.syncedUploadLength = data.syncedUploadLength
-        state.syncedDownloadLength = data.syncedDownloadLength
+        state.syncedLength = data.syncedLength
       }
       request.onerror = function (event) {
-        console.error('fetchDocLastSync error', event)
+        console.error('fetcgDocLastSync error', event)
       }
     })
   }
 
-  function updateDocLastSync ({key, syncedUploadLength, syncedDownloadLength}) {
+
+  function updateDocLastSync ({key, syncedLength}) {
     ready(() => {
       const db = state.documentsDB
       const objectStore = db.transaction('documents', 'readwrite')
@@ -145,8 +146,8 @@ function store (state, emitter) {
       const request = objectStore.get(key)
       request.onsuccess = function (event) {
         const data = event.target.result
-        data.syncedUploadLength = syncedUploadLength
-        data.syncedDownloadLength = syncedDownloadLength
+        if (!data) return
+        data.syncedLength = syncedLength
         data.lastSync = Date.now()
         const requestUpdate = objectStore.put(data)
         requestUpdate.onerror = function (event) {

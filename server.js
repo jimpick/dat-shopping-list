@@ -52,6 +52,7 @@ function serveIndex (req, res, next) {
 }
 
 router.get('/create', serveIndex)
+router.get('/add-link', serveIndex)
 router.get('/doc/:key', serveIndex)
 
 const archives = {}
@@ -118,7 +119,7 @@ function makeServiceWorker () {
     skipWaiting: true,
     clientsClaim: true,
     navigateFallback: '/',
-    navigateFallbackWhitelist: [/^\/doc/],
+    navigateFallbackWhitelist: [/^\/doc/, /^\/create/, /^\/add-link/],
     globDirectory: '.',
     globPatterns: ['index.html', 'static\/**\/*.svg', '.data\/**\/*.png'],
     modifyUrlPrefix: {

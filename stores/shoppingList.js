@@ -20,6 +20,21 @@ function store (state, emitter) {
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
   
+  emitter.on('addLink', link => {
+    const match = link.match(/([0-9a-fA-F]{64})$/)
+    if (match) {
+      const key = match[1]
+      emitter.emit('pushState', `/doc/${key}`)
+    } else {
+      customAlert.show('URL or key must contain a 64 character hex value', () => {
+        const textInput = document.querySelector('.content input[type="text"]')
+        textInput.removeAttribute('disabled')
+        const submitButton = document.querySelector('.content input[type="submit"]')
+        submitButton.removeAttribute('disabled')
+      })
+    }
+  })
+
   function updateDoc () {
     emitter.once('render', () => {
       document.body.scrollIntoView(true)
@@ -112,31 +127,18 @@ function store (state, emitter) {
   })
   
   function updateSyncStatus (message) {
-    const {
-      key,
-      connectedPeers,
-      localUploadLength,
-      remoteUploadLength,
-      localDownloadLength,
-      remoteDownloadLength
-    } = message
-    if (state.key && key !== state.key.toString('hex')) return
+    const {key, connectedPeers, localFeedLength, remoteFeedLength} = message
     state.connected = !!connectedPeers
-    state.localUploadLength = state.loading ? null : localUploadLength
-    state.localDownloadLength = state.loading ? null : localDownloadLength
+    state.localFeedLength = state.loading ? null : localFeedLength
     if (state.key && connectedPeers) {
       state.connecting = false
-      state.syncedUploadLength = remoteUploadLength
-      state.syncedDownloadLength = remoteDownloadLength
+      state.syncedLength = remoteFeedLength
       emitter.emit(
         'updateDocLastSync',
-        {
-          key,
-          syncedUploadLength: remoteUploadLength,
-          syncedDownloadLength: remoteDownloadLength
-        }
+        {key, syncedLength: remoteFeedLength}
       )
     }
+    state.needToSync = localFeedLength - state.syncedLength
     emitter.emit('render')
   }
   

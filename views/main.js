@@ -61,9 +61,30 @@ const prefix = css`
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
+
       button {
         height: 4rem;
       }
+
+      .addLinkButton button {
+        margin-top: 1.5rem;
+        height: 2.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+    }
+    .notSolo {
+      display: flex;
+      justify-content: space-between;
+      margin: 0 0.5rem;
+    }
+
+    .addLinkButton button {
+      color: var(--color-green);
+      background: var(--color-white);
+      border-color: var(--color-green);
     }
   }
 `
@@ -90,7 +111,7 @@ function mainView (state, emit) {
     }
   })
   const docHeader = documents.length > 0 ? html`<h3>Shopping Lists</h3>` : null
-  const soloCta = documents.length === 0 ? 'solo' : 'not-solo'
+  const soloCta = documents.length === 0 ? 'solo' : 'notSolo'
   return html`
     <body class=${prefix}>
       ${header(state)}
@@ -115,6 +136,9 @@ function mainView (state, emit) {
         </ul>
         <div class=${soloCta}>
           ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+          <div class="addLinkButton">
+            ${button.button('Have a Link? Paste it Here', () => emit('pushState', '/add-link'))}
+          </div>
         </div>
       </section>
       ${footer(state)}
