@@ -118,6 +118,8 @@ function store (state, emitter) {
     state.lastSync = null
     state.syncedUploadLength = null
     state.syncedDownloadLength = null
+    state.localUploadLength = null
+    state.localDownloadLength = null
     ready(() => {
       const db = state.documentsDB
       const objectStore = db.transaction('documents', 'readwrite')
