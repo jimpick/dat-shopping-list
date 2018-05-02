@@ -8,11 +8,10 @@
   },
   "dependencies": {
     "brfs": "^1.6.1",
-    "budo": "jimpick/budo#use-polling-watchify",
     "choo": "^6.11.0-preview1",
     "express": "^4.16.3",
     "express-ws": "^3.0.0",
-    "hyperdiscovery": "^7.0.0",
+    "hyperdiscovery": "^7.1.0",
     "hyperdrive": "jimpick/hyperdrive#3891ef5b7c35db2f674b111061e1b2436dfeccff",
     "pretty-hash": "^1.0.1",
     "random-access-idb": "^1.0.4",
@@ -36,7 +35,8 @@
     "deep-equal": "^1.0.1",
     "focus-trap": "^2.4.3",
     "nocache": "^2.0.0",
-    "hsts": "^2.1.0"
+    "hsts": "^2.1.0",
+    "budo": "^11.2.0"
   },
   "engines": {
     "node": "9.x"
