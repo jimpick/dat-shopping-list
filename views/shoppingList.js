@@ -109,7 +109,7 @@ function shoppingListView (state, emit) {
   function layout (inner) {
     return html`
       <body class=${prefix}>
-        ${header()}
+        ${header(state)}
         <section class="content">
           ${inner}
           <nav class="bottomNav">
