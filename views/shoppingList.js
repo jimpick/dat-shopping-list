@@ -7,6 +7,7 @@ const footer = require('../components/footer')
 const debugTools = require('../components/debugTools')
 const shoppingListTitle = require('../components/shoppingListTitle')
 const writeStatus = require('../components/writeStatus')
+const customAlert = require('../components/customAlert')
 
 const prefix = css`
   :host {
@@ -118,6 +119,7 @@ function shoppingListView (state, emit) {
         </section>
         ${footer(state)}
         ${debugTools(state, emit)}
+        ${customAlert.alertBox(state, emit)}
       </body>
     `
   }
