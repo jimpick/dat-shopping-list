@@ -47,7 +47,7 @@ function runBudo () {
     staticOptions: {
       cacheControl: true,
       maxAge: 60 * 60 * 1000 // one hour
-    },
+    }
     /*
     stream: process.stdout,
     verbose: true
@@ -75,4 +75,3 @@ makeServiceWorker(err => {
     runBudo()
   })
 })
-  

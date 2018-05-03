@@ -141,18 +141,18 @@ class GitHubButton extends Component {
       </div>
     `
   }
-    
+
   load (el) {
     const url = `https://api.github.com/repos/${this.repo}`
-    fetch(url)
+    window.fetch(url)
       .then(res => res.json())
-      .then(({stargazers_count}) => {
-        this.stargazersCount = stargazers_count
+      .then(({stargazers_count: stargazersCount}) => {
+        this.stargazersCount = stargazersCount
         const linkEl = this.stargazersLink()
         el.appendChild(linkEl)
       })
   }
-  
+
   stargazersLink () {
     const {repo, stargazersCount} = this
     return html`
@@ -164,7 +164,7 @@ class GitHubButton extends Component {
       </a>
     `
   }
-  
+
   update () {
     return false
   }

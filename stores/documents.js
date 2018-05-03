@@ -4,7 +4,7 @@ module.exports = store
 
 function store (state, emitter) {
   state.documents = []
-  
+
   const ready = thunky(openDocumentsDB)
 
   ready(() => { emitter.emit('render') })
@@ -18,7 +18,7 @@ function store (state, emitter) {
       })
     })
   })
-  
+
   emitter.on('deleteCurrentDoc', () => {
     const keyHex = state.params.key
     deleteDoc(keyHex, err => {
@@ -27,7 +27,7 @@ function store (state, emitter) {
       emitter.emit('pushState', '/')
     })
   })
-  
+
   emitter.on('fetchDocLastSync', fetchDocLastSync)
   emitter.on('updateDocLastSync', updateDocLastSync)
 
@@ -70,7 +70,7 @@ function store (state, emitter) {
         cursor.continue()
       } else {
         cb()
-      } 
+      }
     }
   }
 
@@ -97,7 +97,7 @@ function store (state, emitter) {
       cb(err)
     }
   }
-  
+
   function deleteDoc (key, cb) {
     const db = state.documentsDB
     const request = db.transaction('documents', 'readwrite')
@@ -141,7 +141,6 @@ function store (state, emitter) {
     })
   }
 
-
   function updateDocLastSync ({key, syncedUploadLength, syncedDownloadLength}) {
     ready(() => {
       const db = state.documentsDB
@@ -164,5 +163,4 @@ function store (state, emitter) {
       }
     })
   }
-
 }

@@ -40,7 +40,7 @@ function createView (state, emit) {
       </div>
     </body>
   `
-  
+
   function submit (event) {
     const docName = event.target.querySelector('input').value
     if (docName) {

@@ -17,7 +17,7 @@ function debugTools (state, emit) {
       <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
     </div>
   `
-  
+
   function downloadZip (event) {
     emit('downloadZip')
     event.preventDefault()
