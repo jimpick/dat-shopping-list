@@ -123,10 +123,12 @@ const prefix = css`
 function writeStatus (state, emit) {
   const db = state.archive && state.archive.db
   if (!db) return null
+  const localKey = db.local.key.toString('hex')
   let sourceCopy = null
   if (!state.writeStatusCollapsed) {
-    sourceCopy = db.local === db.source ?
-        'You created this document.' : 'You joined this document.'
+    sourceCopy = db.local === db.source
+      ? 'You created this document.'
+      : 'You joined this document.'
   }
   let authStatus = null
   if (state.authorized) {
@@ -136,7 +138,6 @@ function writeStatus (state, emit) {
       authStatus = html`<div class="okAuth">You are authorized to write to this document.</div>`
     }
   } else {
-    const localKey = db.local.key.toString('hex')
     let explanationAndLocalKey = null
     if (!state.writeStatusCollapsed) {
       explanationAndLocalKey = html`
@@ -155,13 +156,6 @@ function writeStatus (state, emit) {
           </div>
         </div>
       `
-      function copyToClipboard () {
-        copy(localKey).then(() => {
-          customAlert.show('"Local Key" copied to clipboard')
-          state.localKeyCopied = true
-          emit('render')
-        })
-      }
     }
     let noAuth
     if (!state.writeStatusCollapsed) {
@@ -172,7 +166,7 @@ function writeStatus (state, emit) {
       noAuth = html`<div>
         <span class="noAuth">Not authorized</span>
         (Expand for more info)
-      </div>`        
+      </div>`
     }
     authStatus = html`<div>
       ${noAuth}
@@ -204,18 +198,9 @@ function writeStatus (state, emit) {
         </div>
       </form>
     `
-    function submit (event) {
-      const input = event.target.querySelector('input')
-      const writerKey = input.value.trim()
-      if (writerKey !== '') {
-        emit('authorize', writerKey)
-        input.value = ''
-      }
-      event.preventDefault()
-    }
   }
-  const collapseExpand = state.writeStatusCollapsed ?
-          raw('&#x25bc; Expand') : raw('&#x25b2; Collapse')
+  const collapseExpand = state.writeStatusCollapsed
+    ? raw('&#x25bc; Expand') : raw('&#x25b2; Collapse')
   return html`
     <section class=${prefix} onclick=${() => emit('toggleWriteStatusCollapsed')}>
       <div class="collapseExpand" onkeydown=${keydown} tabindex="0">
@@ -225,7 +210,25 @@ function writeStatus (state, emit) {
       ${authStatus}
       ${authForm}
     </section>
-  `  
+  `
+
+  function copyToClipboard () {
+    copy(localKey).then(() => {
+      customAlert.show('"Local Key" copied to clipboard')
+      state.localKeyCopied = true
+      emit('render')
+    })
+  }
+
+  function submit (event) {
+    const input = event.target.querySelector('input')
+    const writerKey = input.value.trim()
+    if (writerKey !== '') {
+      emit('authorize', writerKey)
+      input.value = ''
+    }
+    event.preventDefault()
+  }
 }
 
 function keydown (event) {

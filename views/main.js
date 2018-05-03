@@ -156,4 +156,3 @@ function mainView (state, emit) {
     </body>
   `
 }
-

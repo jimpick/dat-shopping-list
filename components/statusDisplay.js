@@ -1,16 +1,22 @@
+const path = require('path')
 const html = require('choo/html')
-const raw = require('choo/html/raw')
 const css = require('sheetify')
 const SvgIcon = require('./svgIcon')
 
 // Use browserify + brfs to convert these to inline strings
 const fs = require('fs')
 const syncIcon = fs.readFileSync(
-  __dirname + '/../static/img/ic_sync_black_24px.svg', 'utf8')
+  path.resolve(__dirname, '../static/img/ic_sync_black_24px.svg'),
+  'utf8'
+)
 const syncIconDisabled = fs.readFileSync(
-  __dirname + '/../static/img/ic_sync_disabled_black_24px.svg', 'utf8')
+  path.resolve(__dirname, '../static/img/ic_sync_disabled_black_24px.svg'),
+  'utf8'
+)
 const syncIconProblem = fs.readFileSync(
-  __dirname + '/../static/img/ic_sync_problem_black_24px.svg', 'utf8')
+  path.resolve(__dirname, '../static/img/ic_sync_problem_black_24px.svg'),
+  'utf8'
+)
 
 const prefix = css`
   :host {
@@ -81,9 +87,9 @@ function statusDisplay (state) {
   if (pendingDownload <= 0 || isNaN(pendingDownload)) pendingDownload = null
   if (pendingDownload) pendingDownload = html`<span>${pendingDownload}↓</span>`
   if (state.networkStatus !== undefined) {
-    const onlineOffline = state.networkStatus ?
-            html`<span class="online">Online</span>` :
-            html`<span class="offline">Offline</span>`
+    const onlineOffline = state.networkStatus
+      ? html`<span class="online">Online</span>`
+      : html`<span class="offline">Offline</span>`
     networkStatus = html`
       <div class="networkStatus">
         Network: ${onlineOffline}

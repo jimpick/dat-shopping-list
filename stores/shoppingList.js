@@ -15,11 +15,13 @@ module.exports = store
 function store (state, emitter) {
   state.shoppingList = []
   state.localKeyCopied = false
-  state.writeStatusCollapsed = localStorage.getItem('writeStatusCollapsed')
-  
+  state.writeStatusCollapsed = window.localStorage.getItem(
+    'writeStatusCollapsed'
+  )
+
   emitter.on('DOMContentLoaded', updateDoc)
   emitter.on('navigate', updateDoc)
-  
+
   emitter.on('addLink', link => {
     const match = link.match(/([0-9a-fA-F]{64})$/)
     if (match) {
@@ -97,7 +99,7 @@ function store (state, emitter) {
           emitter.emit('writeNewDocumentRecord', keyHex, docName)
         })
       })
-      
+
       function writeDatJson (cb) {
         const json = JSON.stringify({
           url: `dat://${keyHex}/`,
@@ -125,7 +127,7 @@ function store (state, emitter) {
       }
     })
   })
-  
+
   function updateSyncStatus (message) {
     const {
       key,
@@ -154,11 +156,11 @@ function store (state, emitter) {
     }
     emitter.emit('render')
   }
-  
+
   function updateConnecting (connecting) {
     state.connecting = connecting
   }
-  
+
   function readShoppingList () {
     const archive = state.archive
     const shoppingList = []
@@ -170,7 +172,13 @@ function store (state, emitter) {
         return
       }
       console.log('Shopping list files:', fileList.length)
-      readTitleFromDatJson(title => {
+      readTitleFromDatJson((err, title) => {
+        if (err) {
+          console.log('Error', err)
+          state.error = 'Error loading shopping list'
+          emitter.emit('render')
+          return
+        }
         readShoppingListFiles(err => {
           if (err) {
             console.log('Error', err)
@@ -194,15 +202,15 @@ function store (state, emitter) {
         archive.readFile('dat.json', 'utf8', (err, contents) => {
           if (err) {
             console.error('dat.json error', err)
-            return cb('Unknown')
+            return cb(null, 'Unknown')
           }
-          if (!contents) return cb('Unknown')
+          if (!contents) return cb(null, 'Unknown')
           try {
             const metadata = JSON.parse(contents)
-            cb(metadata.title)
+            cb(null, metadata.title)
           } catch (e) {
             console.error('Parse error', e)
-            cb('Unknown')
+            cb(null, 'Unknown')
           }
         })
       }
@@ -224,7 +232,7 @@ function store (state, emitter) {
       }
     })
   }
-  
+
   function updateAuthorized (cb) {
     if (state.authorized === true) return cb()
     const db = state.archive.db
@@ -243,7 +251,7 @@ function store (state, emitter) {
       cb()
     })
   }
-  
+
   emitter.on('toggleBought', itemFile => {
     const item = state.shoppingList.find(item => item.file === itemFile)
     console.log('toggleBought', itemFile, item)
@@ -270,7 +278,7 @@ function store (state, emitter) {
       console.log(`Unlinked: ${item.file}`)
     })
   })
-  
+
   emitter.on('addItem', name => {
     console.log('addItem', name)
     const archive = state.archive
@@ -306,10 +314,13 @@ function store (state, emitter) {
 
   emitter.on('toggleWriteStatusCollapsed', docName => {
     state.writeStatusCollapsed = !state.writeStatusCollapsed
-    localStorage.setItem('writeStatusCollapsed', state.writeStatusCollapsed)
+    window.localStorage.setItem(
+      'writeStatusCollapsed',
+      state.writeStatusCollapsed
+    )
     emitter.emit('render')
   })
-  
+
   emitter.on('downloadZip', () => {
     console.log('Download zip')
     downloadZip(state.archive)

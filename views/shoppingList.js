@@ -1,11 +1,9 @@
 const html = require('choo/html')
 const raw = require('choo/html/raw')
 const css = require('sheetify')
-const copy = require('clipboard-copy')
 const header = require('../components/header')
 const button = require('../components/button')
 const footer = require('../components/footer')
-const customAlert = require('../components/customAlert')
 const debugTools = require('../components/debugTools')
 const shoppingListTitle = require('../components/shoppingListTitle')
 const writeStatus = require('../components/writeStatus')
@@ -106,7 +104,7 @@ module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
   emit('DOMTitleChange', 'Dat Shopping List - ' + state.docTitle)
-  
+
   function layout (inner) {
     return html`
       <body class=${prefix}>
@@ -123,7 +121,7 @@ function shoppingListView (state, emit) {
       </body>
     `
   }
-  
+
   if (state.error) {
     return layout(html`<div class="error">${state.error}</div>`)
   }

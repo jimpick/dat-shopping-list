@@ -68,14 +68,6 @@ function dbGateway (router) {
             console.error('Watcher error', err)
           })
         })
-        
-        function cancel () {
-          console.log(`Cancelling ${archiveKey}`) 
-          const sw = archives[archiveKey].swarm
-          if (sw) sw.close()
-          archive.db.source.peers.forEach(peer => peer.end())
-          delete archives[archiveKey]
-        }
       }
       archive.ready(() => {
         archives[archiveKey].clients += 1
@@ -90,7 +82,14 @@ function dbGateway (router) {
           }
         )
       })
+
+      function cancel () {
+        console.log(`Cancelling ${archiveKey}`)
+        const sw = archives[archiveKey].swarm
+        if (sw) sw.close()
+        archive.db.source.peers.forEach(peer => peer.end())
+        delete archives[archiveKey]
+      }
     })
   }
 }
-

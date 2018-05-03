@@ -18,7 +18,7 @@ function makeImages (cb) {
     .catch(cb)
 }
 
-function makePngFromSvg(name, size) {
+function makePngFromSvg (name, size) {
   const promise = new Promise((resolve, reject) => {
     gm(`./static/img/${name}.svg`)
       .resize(size, size)

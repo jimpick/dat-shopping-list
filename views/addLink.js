@@ -42,7 +42,7 @@ function addLinkView (state, emit) {
       ${customAlert.alertBox(state, emit)}
     </body>
   `
-  
+
   function submit (event) {
     const link = event.target.querySelector('input').value
     if (link) {

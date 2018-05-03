@@ -51,5 +51,3 @@ function footer (state) {
     </footer>
   `
 }
-
-

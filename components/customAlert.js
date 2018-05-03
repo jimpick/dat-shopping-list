@@ -100,7 +100,7 @@ class Alert extends Component {
     this.focusTrap = focusTrap(el)
     if (this.display) this.focusTrap.activate()
   }
-  
+
   unload (el) {
     this.focusTrap = null
   }
@@ -109,7 +109,7 @@ class Alert extends Component {
     this.cb = cb
     return message !== this.message || display !== this.display
   }
-  
+
   close (event) {
     event.stopPropagation()
     if (this.cb) this.cb()
