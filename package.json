@@ -2,9 +2,9 @@
   "name": "dat-shopping-list",
   "version": "0.0.1",
   "description": "A demo of dat multiwriter support (hyperdrive+hyperdb) in a PWA",
-  "main": "server.js",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server"
   },
   "dependencies": {
     "brfs": "^1.6.1",

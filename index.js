@@ -23,7 +23,7 @@ app.use(state => {
   state.glitchAppName = 'dat-shopping-list'
   state.gitHubRepoName = 'jimpick/dat-shopping-list'
   state.devMode = false
-  state.devLabel = 'b'
+  state.devLabel = 'c'
 })
 app.use(networkStatusStore)
 app.use(documentsStore)
