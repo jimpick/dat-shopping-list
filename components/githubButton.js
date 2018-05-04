@@ -119,10 +119,6 @@ class GitHubButton extends Component {
   }
 
   createElement () {
-    /*
-    const {repo, stargazersCount} = this
-    const counter = stargazersCount === null ? null : this.stargazersLink()
-    */
     const {repo} = this
     const svg = raw(`
       <svg version="1.1" width="14" height="16" viewBox="0 0 14 16" class="octicon octicon-star" aria-hidden="true">
