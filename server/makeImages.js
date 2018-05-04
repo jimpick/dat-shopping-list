@@ -4,16 +4,17 @@ module.exports = makeImages
 
 function makeImages (cb) {
   console.log('Making images')
-  makePngFromSvg('dat-shopping', 16)
-    .then(makePngFromSvg('dat-shopping', 32))
-    .then(makePngFromSvg('dat-shopping', 96))
-    .then(makePngFromSvg('dat-shopping', 120))
-    .then(makePngFromSvg('dat-shopping', 152))
-    .then(makePngFromSvg('dat-shopping', 167))
-    .then(makePngFromSvg('dat-shopping', 180))
-    .then(makePngFromSvg('dat-shopping', 192))
-    .then(makePngFromSvg('dat-shopping', 196))
-    .then(makePngFromSvg('dat-shopping', 512))
+  const base = 'dat-shopping-list'
+  makePngFromSvg(base, 16)
+    .then(makePngFromSvg(base, 32))
+    .then(makePngFromSvg(base, 96))
+    .then(makePngFromSvg(base, 120))
+    .then(makePngFromSvg(base, 152))
+    .then(makePngFromSvg(base, 167))
+    .then(makePngFromSvg(base, 180))
+    .then(makePngFromSvg(base, 192))
+    .then(makePngFromSvg(base, 196))
+    .then(makePngFromSvg(base, 512))
     .then(cb)
     .catch(cb)
 }
