@@ -12,7 +12,7 @@
     "express": "^4.16.3",
     "express-ws": "^3.0.0",
     "hyperdiscovery": "^7.1.0",
-    "hyperdrive": "jimpick/hyperdrive#3891ef5b7c35db2f674b111061e1b2436dfeccff",
+    "hyperdrive": "jimpick/hyperdrive#689b1c9d1269ca3f85b67157a411c8cfa28ce3d7",
     "pretty-hash": "^1.0.1",
     "random-access-idb": "^1.0.4",
     "random-access-memory": "^3.0.0",
