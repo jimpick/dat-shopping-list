@@ -125,7 +125,12 @@ function shoppingListView (state, emit) {
   }
 
   if (state.error) {
-    return layout(html`<div class="error">${state.error}</div>`)
+    return layout(html`
+      <div class="error">
+        ${state.error}<br>
+        (Try reloading, there occasionally are problems during sync)
+      </div>
+    `)
   }
   if (state.loading) return layout('Loading...')
 
