@@ -1,7 +1,10 @@
+#!/usr/bin/env node
+
 const budo = require('budo')
 const express = require('express')
 const compression = require('compression')
 const hsts = require('hsts')
+const csp = require('helmet-csp')
 const mkdirp = require('mkdirp')
 const dbGateway = require('./dbGateway')
 const serviceWorkerNoCache = require('./middleware/serviceWorkerNoCache')
@@ -36,6 +39,26 @@ function runBudo () {
       ]
     },
     middleware: [
+      csp({
+        directives: {
+          defaultSrc: ["'self'"],
+          imgSrc: ["'self'", 'https://cdn.glitch.com'],
+          connectSrc: [
+            'https://api.github.com',
+            (req, res) => {
+              // Glitch has a proxy
+              const xfpHeader = req.headers['x-forwarded-proto']
+              if (!xfpHeader || !xfpHeader.match(/^https/)) {
+                return 'ws://' + req.headers['host']
+              } else {
+                return 'wss://*.*'
+              }
+            }
+          ],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'"]
+        }
+      }),
       hsts({maxAge: 10886400}),
       compression(),
       serviceWorkerNoCache,
