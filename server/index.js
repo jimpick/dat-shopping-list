@@ -51,7 +51,7 @@ function runBudo () {
               if (!xfpHeader || !xfpHeader.match(/^https/)) {
                 return 'ws://' + req.headers['host']
               } else {
-                return 'wss://*.*'
+                return 'wss://' + req.headers['host']
               }
             }
           ],
