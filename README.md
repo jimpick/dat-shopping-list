@@ -30,7 +30,6 @@ The app can easily be deployed to Heroku, which offers either 550-1000 hours a m
 
 ```
 now jimpick/dat-shopping-list
-
 ```
 
 ## Docker
@@ -44,6 +43,8 @@ If you have docker installed, you should be able to run it:
 ```
 docker run -p 5000:5000 jimpick/dat-shopping-list
 ````
+
+Several of the major cloud hosting companies offer a free tier where you can run Docker images.
 
 ## npm
 
