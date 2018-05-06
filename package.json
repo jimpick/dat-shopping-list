@@ -34,6 +34,7 @@
     "pretty-hash": "^1.0.1",
     "random-access-idb": "^1.0.4",
     "random-access-memory": "^3.0.0",
+    "sharp": "^0.20.2",
     "sheetify": "^7.3.2",
     "sheetify-nested": "^1.0.2",
     "svgexport": "^0.3.2",

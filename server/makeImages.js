@@ -1,4 +1,4 @@
-const svgexport = require('svgexport')
+const sharp = require('sharp')
 
 module.exports = makeImages
 
@@ -7,12 +7,17 @@ function makeImages (cb) {
   const base = 'dat-shopping-list'
   const sizes = [16, 32, 96, 120, 152, 167, 180, 192, 196, 512]
 
-  svgexport.render({
-    input: [ `./static/img/${base}.svg` ],
-    output: sizes.map(size => [
-      `./.data/img/${base}-${size}.png`,
-      `${size}:`
-    ]),
-    cwd: process.cwd()
-  }, cb)
+  sizes.reduce(
+    (promise, size) => {
+      console.log('Making png', base, size)
+      return promise
+        .then(() => {
+          return sharp(`./static/img/${base}.svg`)
+            .resize(size, size)
+            .toFile(`./.data/img/${base}-${size}.png`)
+        })
+    },
+    Promise.resolve()
+  ).then(() => cb())
+  .catch(err => { console.error('Error', err) })
 }
