@@ -28,7 +28,7 @@ setInterval(function cleanup () {
       sortedArchives[i].cancel()
     }
   }
-}, 15000)
+}, 60 * 1000)
 
 function dbGateway (router) {
   return function attachWebsocket (server) {
