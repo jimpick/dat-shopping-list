@@ -6,13 +6,67 @@
 
 This is a work-in-progress. This version is a technical prototype.
 
-# Quick Deploy Options
+# Quick Deploy / Free Hosting Options
+
+The demo is very easy to deploy, as it is self-contained, and requires no storage.
+
+## Glitch
+
+dat-shopping-list was developed on Glitch. Glitch is very nice. It is free, and it gives you a Node.js backend as well as an in-browser IDE with multi-user editing and debugging! Use the following link to fork your own copy of the Node.js gateway service and front-end user interface:
 
 [![Remix on Glitch](https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg)](https://glitch.com/edit/#!/remix/dat-shopping-list)
 
-[![Deploy to now](https://deploy.now.sh/static/button.svg)](https://deploy.now.sh/?repo=https://github.com/jimpick/dat-shopping-list)
+## Heroku
+
+The app can easily be deployed to Heroku, which offers either 550-1000 hours a month for free (sleeps after 30 minutes of inactivity). 
+
+[Heroku Pricing](https://www.heroku.com/pricing)
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+## Zeit now.sh
+
+[Zeit](https://zeit.co/account/plan) offers a free "OSS" plan that works (using the Docker image). Once you are signed up and have the command line tool installed, you can deploy straight from the github repo:  
+
+```
+now jimpick/dat-shopping-list
+```
+
+## Docker
+
+The git repo includes a simple Dockerfile. There is also a Docker image published here:
+
+https://hub.docker.com/r/jimpick/dat-shopping-list/
+
+If you have docker installed, you should be able to run it:
+
+```
+docker run -p 5000:5000 jimpick/dat-shopping-list
+````
+
+Several of the major cloud hosting companies offer a free tier where you can run Docker images.
+
+## npm
+
+The demo is published on npm:
+
+https://www.npmjs.com/package/dat-shopping-list
+
+You can try it out using `npx`:
+
+```
+npx dat-shopping-list
+```
+
+or you can install it globally and run it:
+
+```
+npm install -g dat-shopping-list
+
+dat-shopping-list
+```
+
+It should work on Mac and Linux. It hasn't been tested on Windows.
 
 # License
 
