@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const path = require('path')
 const budo = require('budo')
 const express = require('express')
 const compression = require('compression')
@@ -14,6 +15,8 @@ const makeImages = require('./makeImages')
 const periodicRestart = require('./periodicRestart')
 
 require('events').prototype._maxListeners = 100
+
+process.chdir(path.resolve(__dirname, '..'))
 
 const router = express.Router()
 
