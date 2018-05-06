@@ -1,5 +1,7 @@
 # dat-shopping-list
 
+![Logo](https://dat-shopping-list.glitch.me/img/dat-shopping-list-96.png)
+
 [https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/)
 
 # Overview
@@ -9,6 +11,8 @@ This is a work-in-progress. This version is a technical prototype.
 # Quick Deploy / Free Hosting Options
 
 The demo is very easy to deploy, as it is self-contained, and requires no storage.
+
+There are many ways for you to run your own instance. You may want to run your own instance for privacy reasons, reliability reasons, or so you can customize it.
 
 ## Glitch
 
@@ -26,7 +30,7 @@ The app can easily be deployed to Heroku, which offers either 550-1000 hours a m
 
 ## Zeit now.sh
 
-[Zeit](https://zeit.co/account/plan) offers a free "OSS" plan that works (using the Docker image). Once you are signed up and have the command line tool installed, you can deploy straight from the github repo:  
+[Zeit](https://zeit.co/account/plan) offers a free "OSS" plan that works with the Dockerfile. Once you are signed up and have the command line tool installed, you can deploy straight from the github repo:  
 
 ```
 now jimpick/dat-shopping-list
@@ -42,9 +46,9 @@ If you have docker installed, you should be able to run it:
 
 ```
 docker run -p 5000:5000 jimpick/dat-shopping-list
-````
+```
 
-Several of the major cloud hosting companies offer a free tier where you can run Docker images.
+Several of the major cloud hosting companies offer a free tier or introductory offer where you can run Docker images.
 
 ## npm
 
