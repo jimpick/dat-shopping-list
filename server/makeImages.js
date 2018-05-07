@@ -14,6 +14,8 @@ function makeImages (cb) {
         .then(() => {
           return sharp(`./static/img/${base}.svg`)
             .resize(size, size)
+            .background('white')
+            .flatten()
             .toFile(`./.data/img/${base}-${size}.png`)
         })
     },

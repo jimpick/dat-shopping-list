@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
+const path = require('path')
 const budo = require('budo')
 const express = require('express')
 const compression = require('compression')
 const hsts = require('hsts')
-const csp = require('helmet-csp')
 const mkdirp = require('mkdirp')
 const dbGateway = require('./dbGateway')
 const serviceWorkerNoCache = require('./middleware/serviceWorkerNoCache')
@@ -12,19 +12,24 @@ const redirectToHttps = require('./middleware/redirectToHttps')
 const makeServiceWorker = require('./makeServiceWorker')
 const makeImages = require('./makeImages')
 const periodicRestart = require('./periodicRestart')
+const csp = require('./csp')
 
 require('events').prototype._maxListeners = 100
+
+process.chdir(path.resolve(__dirname, '..'))
 
 const router = express.Router()
 
 function serveIndex (req, res, next) {
-  req.url = '/index.html'
+  req.url = '/'
   next()
 }
 
-router.get('/create', serveIndex)
-router.get('/add-link', serveIndex)
-router.get('/doc/:key', serveIndex)
+router.get('/', csp, serveIndex)
+router.get('/index.html', csp, serveIndex)
+router.get('/create', csp, serveIndex)
+router.get('/add-link', csp, serveIndex)
+router.get('/doc/:key', csp, serveIndex)
 
 const attachWebsocket = dbGateway(router)
 
@@ -39,26 +44,6 @@ function runBudo () {
       ]
     },
     middleware: [
-      csp({
-        directives: {
-          defaultSrc: ["'self'"],
-          imgSrc: ["'self'", 'https://cdn.glitch.com'],
-          connectSrc: [
-            'https://api.github.com',
-            (req, res) => {
-              // Glitch has a proxy
-              const xfpHeader = req.headers['x-forwarded-proto']
-              if (!xfpHeader || !xfpHeader.match(/^https/)) {
-                return 'ws://' + req.headers['host']
-              } else {
-                return 'wss://' + req.headers['host']
-              }
-            }
-          ],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-          styleSrc: ["'self'", "'unsafe-inline'"]
-        }
-      }),
       hsts({maxAge: 10886400}),
       compression(),
       serviceWorkerNoCache,
