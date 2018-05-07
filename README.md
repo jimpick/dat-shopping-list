@@ -44,7 +44,7 @@ Note: If you use the OSS plan, the logs will be publicly available, which may no
 
 The git repo includes a simple Dockerfile. There is also a Docker image published here:
 
-https://hub.docker.com/r/jimpick/dat-shopping-list/
+[https://hub.docker.com/r/jimpick/dat-shopping-list/](https://hub.docker.com/r/jimpick/dat-shopping-list/)
 
 If you have docker installed, you should be able to run it:
 
@@ -58,7 +58,7 @@ Several of the major cloud hosting companies offer a free tier or introductory o
 
 The demo is published on npm:
 
-https://www.npmjs.com/package/dat-shopping-list
+[https://www.npmjs.com/package/dat-shopping-list](https://www.npmjs.com/package/dat-shopping-list)
 
 You can try it out using `npx`:
 
