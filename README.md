@@ -38,6 +38,8 @@ The app can easily be deployed to Heroku, which offers either 550-1000 hours a m
 now jimpick/dat-shopping-list
 ```
 
+Note: If you use the OSS plan, the logs will be publicly available, which may not be what you want, as people will be able to see the keys of shopping lists that have been synced through the gateway, and they will be able to download the data. The logging could be changed to hide the keys.
+
 ## Docker
 
 The git repo includes a simple Dockerfile. There is also a Docker image published here:
