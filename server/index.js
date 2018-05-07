@@ -82,7 +82,7 @@ function runBudo () {
   devServer.on('connect', event => {
     console.log('Listening on', event.uri)
     attachWebsocket(event.server)
-    periodicRestart(60) // Hourly
+    periodicRestart(24 * 60) // Daily
   })
 }
 

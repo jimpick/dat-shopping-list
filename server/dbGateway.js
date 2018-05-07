@@ -8,7 +8,7 @@ const dumpWriters = require('../lib/dumpWriters')
 
 module.exports = dbGateway
 
-const maxArchives = 25
+const maxArchives = 100
 const archives = {}
 
 setInterval(function cleanup () {

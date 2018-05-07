@@ -138,11 +138,13 @@ function statusDisplay (state) {
       </div>
     `
   }
+  let serviceWorker = state.serviceWorker ? html`<div>Robust Mode</div>` : null
   let devLabel = state.devMode ? html`<div>Label: ${state.devLabel}</div>` : null
   return html`
     <div class=${prefix}>
       ${networkStatus}
       ${connected}
+      ${serviceWorker}
       ${devLabel}
     </div>
   `
