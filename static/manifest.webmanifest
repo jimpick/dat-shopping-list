@@ -3,7 +3,7 @@
   "short_name": "Dat Shopping",
   "description": "A demo of dat multiwriter support (hyperdrive+hyperdb) in a PWA",
   "lang": "en-US",
-  "start_url": "/?utm_source=homescreen",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#2ACA4B",
