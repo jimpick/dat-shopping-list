@@ -20,6 +20,8 @@ dat-shopping-list was developed on Glitch. Glitch is very nice. It is free, and 
 
 [![Remix on Glitch](https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg)](https://glitch.com/edit/#!/remix/dat-shopping-list)
 
+Note: Occasionally, Glitch gets into a state where it can't read from the disk. One way to get going again is to run: `rm -rf node_modules && npm install` on the console.
+
 ## Heroku
 
 The app can easily be deployed to Heroku, which offers either 550-1000 hours a month for free (sleeps after 30 minutes of inactivity). 
