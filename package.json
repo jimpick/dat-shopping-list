@@ -1,7 +1,7 @@
 {
   "name": "dat-shopping-list",
   "version": "0.0.3",
-  "description": "A demo of dat multiwriter support (hyperdrive+hyperdb) in a PWA",
+  "description": "A demo of Dat multiwriter support (hyperdrive+hyperdb) in a PWA",
   "author": "Jim Pick (@jimpick)",
   "main": "server/index.js",
   "bin": {
@@ -30,11 +30,10 @@
     "helmet-csp": "^2.7.0",
     "hsts": "^2.1.0",
     "hyperdiscovery": "^7.1.0",
-    "hyperdrive": "jimpick/hyperdrive#689b1c9d1269ca3f85b67157a411c8cfa28ce3d7",
+    "hyperdrive": "mafintosh/hyperdrive#hyperdb-backend",
     "jszip": "^3.1.5",
     "mkdirp": "^0.5.1",
     "monotonic-timestamp-base36": "^1.0.0",
-    "nanocomponent": "^6.5.2",
     "nocache": "^2.0.0",
     "pretty-hash": "^1.0.1",
     "random-access-idb": "^1.0.4",
