@@ -301,7 +301,7 @@ function store (state, emitter) {
       return
     }
     const archive = state.archive
-    archive.db.authorize(toBuffer(writerKey, 'hex'), err => {
+    archive.authorize(toBuffer(writerKey, 'hex'), err => {
       if (err) {
         customAlert.show('Error while authorizing: ' + err.message)
       } else {
