@@ -13,7 +13,7 @@ function makeServiceWorker (cb) {
       navigateFallback: '/',
       navigateFallbackWhitelist: [/^\/doc/, /^\/create/, /^\/add-link/],
       globDirectory: '.',
-      globPatterns: ['index.html', 'static/**/*.svg', '.data/**/*.png'],
+      globPatterns: ['index.html', 'static/manifest.webmanifest', 'static/**/*.svg', '.data/**/*.png'],
       modifyUrlPrefix: {
         'static': '',
         '.data': ''
