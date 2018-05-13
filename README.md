@@ -6,7 +6,23 @@
 
 # Overview
 
-This is a work-in-progress. This version is a technical prototype.
+Dat Shopping List is a "Progressive Web App" built to demonstrate how to use the
+new "multiwriter" capabalities that are being added to the [Dat Project](https://datproject.org/).
+
+The demo is a simple "to do list" app, in the spirit of the [TodoMVC](http://todomvc.com/) project. 
+
+You can run it on any modern web browser. Also, you can run it on your mobile phone (iOS and Android), and it should work offline as well as online.
+
+**Blog post coming soon!**
+
+![Quick Usage Gif](https://dat-shopping-list-video-jimpick.hashbase.io/dat-shopping-list-basic.gif)
+
+## Video Walkthrough
+
+Here is a short (2.5 minute) walkthrough of the demo.
+
+* [Video Walkthrough (MP4)](https://dat-shopping-list-video-jimpick.hashbase.io/dat-shopping-list-1.mp4)
+
 
 # Quick Deploy / Free Hosting Options
 

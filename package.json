@@ -30,7 +30,7 @@
     "helmet-csp": "^2.7.0",
     "hsts": "^2.1.0",
     "hyperdiscovery": "^7.1.0",
-    "hyperdrive": "mafintosh/hyperdrive#hyperdb-backend",
+    "@jimpick/hyperdrive-hyperdb-backend": "9.12.3-1",
     "jszip": "^3.1.5",
     "mkdirp": "^0.5.1",
     "monotonic-timestamp-base36": "^1.0.0",
