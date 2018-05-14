@@ -24,7 +24,7 @@ function store (state, emitter) {
   emitter.on('navigate', updateDoc)
 
   emitter.on('addLink', link => {
-    const match = link.match(/([0-9a-fA-F]{64})$/)
+    const match = link.match(/([0-9a-fA-F]{64})\/?$/)
     if (match) {
       const key = match[1]
       emitter.emit('pushState', `/doc/${key}`)
