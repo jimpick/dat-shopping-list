@@ -15,7 +15,7 @@ You can run it on any modern web browser. Also, you can run it on your mobile ph
 
 Check out the blog post:
 
-* [Demo: A Collaborative Shopping List Build On Dat](https://blog.datproject.org/2018/05/14/dat-shopping-list/)
+* [Demo: A Collaborative Shopping List Built On Dat](https://blog.datproject.org/2018/05/14/dat-shopping-list/)
 
 ![Quick Usage Gif](https://dat-shopping-list-video-jimpick.hashbase.io/dat-shopping-list-basic.gif)
 
