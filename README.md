@@ -13,7 +13,9 @@ The demo is a simple "to do list" app, in the spirit of the [TodoMVC](http://tod
 
 You can run it on any modern web browser. Also, you can run it on your mobile phone (iOS and Android), and it should work offline as well as online.
 
-**Blog post coming soon!**
+Check out the blog post:
+
+* [Demo: A Collaborative Shopping List Build On Dat](https://blog.datproject.org/2018/05/14/dat-shopping-list/)
 
 ![Quick Usage Gif](https://dat-shopping-list-video-jimpick.hashbase.io/dat-shopping-list-basic.gif)
 

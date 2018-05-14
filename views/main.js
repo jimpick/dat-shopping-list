@@ -134,7 +134,8 @@ function mainView (state, emit) {
           </p>
           <p>
             Make shopping lists and use them online or offline, and sync between multiple
-            devices or users.
+            devices or users. Read the <a href="https://blog.datproject.org/2018/05/14/dat-shopping-list/"
+            class="link" target="_blank">blog post!</a>
           </p>
         </p>
         <header>
