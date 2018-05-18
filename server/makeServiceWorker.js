@@ -7,7 +7,7 @@ function makeServiceWorker (cb) {
   workboxBuild
     .generateSW({
       swDest: '.data/sw.js',
-      importWorkboxFrom: 'local',
+      // importWorkboxFrom: 'local',
       skipWaiting: true,
       clientsClaim: true,
       navigateFallback: '/',
