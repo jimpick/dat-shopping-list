@@ -20,7 +20,7 @@ module.exports = addLinkView
 
 function addLinkView (state, emit) {
   emit('DOMTitleChange', 'Dat Shopping List - Add Link')
-  const input = html`<input type="text" autofocus>`
+  const input = html`<input type="text" autofocus spellcheck="false">`
   input.isSameNode = function (target) {
     return (target && target.nodeName && target.nodeName === 'INPUT')
   }
