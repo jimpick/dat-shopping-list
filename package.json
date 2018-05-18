@@ -1,6 +1,6 @@
 {
   "name": "dat-shopping-list",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A demo of Dat multiwriter support (hyperdrive+hyperdb) in a PWA",
   "author": "Jim Pick (@jimpick)",
   "main": "server/index.js",
