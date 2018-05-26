@@ -38,8 +38,8 @@ app.use((state, emitter) => {
 app.use(state => {
   state.glitchAppName = 'dat-shopping-list'
   state.gitHubRepoName = 'jimpick/dat-shopping-list'
-  state.devMode = false
-  state.devLabel = 'e'
+  state.devMode = true
+  state.devLabel = 'f'
 })
 app.use(networkStatusStore)
 app.use(documentsStore)
