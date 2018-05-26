@@ -15,11 +15,25 @@ function debugTools (state, emit) {
     <div class=${prefix}>
       Debug tools: ${' '}
       <a href="#" class="link" onclick=${downloadZip}>Download Zip</a>
+      <a href="#" class="link" onclick=${unregisterServiceWorker}>Unregister Service Worker</a>
     </div>
   `
 
   function downloadZip (event) {
     emit('downloadZip')
+    event.preventDefault()
+  }
+  
+  function unregisterServiceWorker (event) {
+    if (navigator.serviceWorker) {
+      navigator.serverWorker.getRegistrations()
+        .then(registrations => {
+          if (registrations && registrations[0]) {
+            registrations[0].unregister()
+              .then(() => alert('Unregistered'))
+          }
+        })
+    }
     event.preventDefault()
   }
 }

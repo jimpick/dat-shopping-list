@@ -57,7 +57,6 @@ function runBudo () {
       maxAge: 60 * 60 * 1000, // one hour
       setHeaders: (res, path) => {
         if (path.match(/\.data\/workbox-.*/)) {
-          console.log('Jim setHeaders', path)
           res.setHeader('cache-control', 'public,max-age=31536000,immutable')
         }
       }
