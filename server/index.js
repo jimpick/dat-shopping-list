@@ -54,12 +54,7 @@ function runBudo () {
     dir: ['.', 'static', '.data'],
     staticOptions: {
       cacheControl: true,
-      maxAge: 60 * 60 * 1000, // one hour
-      setHeaders: (res, path) => {
-        if (path.match(/\.data\/workbox-.*/)) {
-          res.setHeader('cache-control', 'public,max-age=31536000,immutable')
-        }
-      }
+      maxAge: 60 * 60 * 1000 // one hour
     }
     /*
     stream: process.stdout,
