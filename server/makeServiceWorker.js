@@ -1,45 +1,36 @@
-const workboxBuild = require('workbox-build')
+const swPrecache = require('sw-precache')
 
 module.exports = makeServiceWorker
 
 function makeServiceWorker (cb) {
   console.log('Making service worker')
-  workboxBuild
-    .generateSW({
-      swDest: '.data/sw.js',
-      importWorkboxFrom: 'local',
-      skipWaiting: true,
-      clientsClaim: true,
-      navigateFallback: '/',
-      navigateFallbackWhitelist: [/^\/doc/, /^\/create/, /^\/add-link/],
-      globDirectory: '.',
-      globPatterns: ['index.html', 'static/manifest.webmanifest', 'static/**/*.svg', '.data/**/*.png'],
-      modifyUrlPrefix: {
-        'static': '',
-        '.data': ''
+  swPrecache.write('.data/sw.js', {
+    skipWaiting: true,
+    clientsClaim: true,
+    navigateFallback: '/',
+    navigateFallbackWhitelist: [/^\/doc/, /^\/create/, /^\/add-link/],
+    staticFileGlobs: ['index.html', 'static/manifest.webmanifest', 'static/**/*.svg', '.data/**/*.png'],
+    stripPrefixMulti: {
+      'static': '',
+      '.data': ''
+    },
+    runtimeCaching: [
+      {
+        urlPattern: /\/index.js$/,
+        handler: 'fastest'
       },
-      templatedUrls: {
-        '/': [ 'views/main.js' ]
+      {
+        urlPattern: new RegExp('^https://cdn.glitch.com/'),
+        handler: 'fastest'
       },
-      runtimeCaching: [
-        {
-          urlPattern: /\/index.js$/,
-          handler: 'staleWhileRevalidate'
-        },
-        {
-          urlPattern: new RegExp('^https://cdn.glitch.com/'),
-          handler: 'staleWhileRevalidate'
-        },
-        {
-          urlPattern: new RegExp('^https://buttons.github.io/'),
-          handler: 'staleWhileRevalidate'
-        },
-        {
-          urlPattern: new RegExp('^https://api.github.com/'),
-          handler: 'staleWhileRevalidate'
-        }
-      ]
-    })
-    .then(() => cb())
-    .catch(cb)
+      {
+        urlPattern: new RegExp('^https://buttons.github.io/'),
+        handler: 'fastest'
+      },
+      {
+        urlPattern: new RegExp('^https://api.github.com/'),
+        handler: 'fastest'
+      }
+    ]    
+  }, cb)
 }

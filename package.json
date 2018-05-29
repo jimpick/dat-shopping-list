@@ -41,10 +41,10 @@
     "sharp": "^0.20.2",
     "sheetify": "^7.3.2",
     "sheetify-nested": "^1.0.2",
+    "sw-precache": "^5.2.1",
     "thunky": "^1.0.2",
     "to-buffer": "^1.1.1",
-    "websocket-stream": "^5.1.2",
-    "workbox-build": "^3.2.0"
+    "websocket-stream": "^5.1.2"
   },
   "engines": {
     "node": "9.x"
