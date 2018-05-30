@@ -48,9 +48,9 @@ function header (state) {
   return html`
     <nav class=${prefix}>
       <a href="/">
-        <img src="/img/dat-hexagon.svg" alt="Dat Project Logo">
+        <img src="/img/dat-tiddlywiki.svg" alt="Dat Tiddlywiki Logo">
         <span class="title">
-          <span class="first-word">Dat</span> Shopping List
+          <span class="first-word">Dat</span> TiddlyWiki
         </span>
       </a>
       ${statusDisplay(state)}

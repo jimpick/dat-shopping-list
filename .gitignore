@@ -2,4 +2,3 @@ node_modules
 *.swp
 .data
 package-lock.json
-.less*

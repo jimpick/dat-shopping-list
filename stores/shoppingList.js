@@ -24,7 +24,7 @@ function store (state, emitter) {
   emitter.on('navigate', updateDoc)
 
   emitter.on('addLink', link => {
-    const match = link.match(/([0-9a-fA-F]{64})\/?$/)
+    const match = link.match(/([0-9a-fA-F]{64})\/?(tw)?\/?$/)
     if (match) {
       const key = match[1]
       emitter.emit('pushState', `/doc/${key}`)
@@ -73,7 +73,9 @@ function store (state, emitter) {
         state.cancelGatewayReplication = connectToGateway(
           archive, updateSyncStatus, updateConnecting
         )
-        readShoppingList()
+        if (archive.db._writers[0].length() > 0) {
+          readShoppingList()
+        }
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
           dumpWriters(archive)

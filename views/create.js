@@ -18,7 +18,7 @@ const prefix = css`
 module.exports = createView
 
 function createView (state, emit) {
-  emit('DOMTitleChange', 'Dat Shopping List - Create')
+  emit('DOMTitleChange', 'Dat TiddlyWiki - Create')
   const input = html`<input type="text" autofocus>`
   input.isSameNode = function (target) {
     return (target && target.nodeName && target.nodeName === 'INPUT')
@@ -29,7 +29,7 @@ function createView (state, emit) {
       ${header(state)}
       <div class="content">
         <h2>
-          Enter a name for your new shopping list
+          Enter a name for your new TiddlyWiki
         </h2>
         <form onsubmit=${submit}>
           ${input}

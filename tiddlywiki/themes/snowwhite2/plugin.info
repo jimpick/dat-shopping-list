@@ -1,0 +1,10 @@
+{
+	"title": "$:/themes/snowwhite2",
+	"name": "Snow White 2",
+	"author": "JeremyRuston",
+	"core-version": ">=5.0.0",
+	"plugin-type": "theme",
+	"description": "Snow White 2",
+	"dependents": ["$:/themes/tiddlywiki/vanilla"],
+	"plugin-priority": "0"
+}

@@ -1,7 +1,7 @@
 const expressWebSocket = require('express-ws')
 const websocketStream = require('websocket-stream/stream')
 const ram = require('random-access-memory')
-//const hyperdrive = require('hyperdrive')
+// const hyperdrive = require('hyperdrive')
 const hyperdrive = require('@jimpick/hyperdrive-hyperdb-backend')
 const hyperdiscovery = require('hyperdiscovery')
 const pump = require('pump')

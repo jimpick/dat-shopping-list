@@ -101,7 +101,7 @@ const prefix = css`
 module.exports = mainView
 
 function mainView (state, emit) {
-  emit('DOMTitleChange', 'Dat Shopping List')
+  emit('DOMTitleChange', 'Dat TiddlyWiki')
   const documents = state.documents.map(doc => {
     return html`
       <li onclick=${click} onkeydown=${keydown} tabindex="0" role="button">
@@ -119,23 +119,22 @@ function mainView (state, emit) {
       }
     }
   })
-  const docHeader = documents.length > 0 ? html`<h3>Shopping Lists</h3>` : null
+  const docHeader = documents.length > 0 ? html`<h3>TiddlyWikis</h3>` : null
   const soloCta = documents.length === 0 ? 'solo' : 'notSolo'
   return html`
     <body class=${prefix}>
       ${header(state)}
       <section class="content">
         <div class="uvp">
-          <h4>Test drive multi-writer Dat!</h4>
+          <h4>Multiwriter Peer-to-Peer TiddlyWikis!</h4>
           <p>
             This is a <b>Progressive Web App</b> built to demonstrate the use of the new 
             <b>multi-writer</b> capabilities from the 
             <a href="https://datproject.org/" class="link">Dat Project</a>.
           </p>
           <p>
-            Make shopping lists and use them online or offline, and sync between multiple
-            devices or users. Read the <a href="https://blog.datproject.org/2018/05/14/dat-shopping-list/"
-            class="link" target="_blank">blog post!</a>
+            Make wikis and use them online or offline, and sync between multiple
+            devices or users.
           </p>
         </p>
         <header>
@@ -146,7 +145,7 @@ function mainView (state, emit) {
         </ul>
         <div class=${soloCta}>
           <div class="createButton">
-            ${button.button('Create a new Shopping List', () => emit('pushState', '/create'))}
+            ${button.button('Create a new TiddlyWiki', () => emit('pushState', '/create'))}
           </div>
           <div class="addLinkButton">
             ${button.button('Have a Link? Paste it Here', () => emit('pushState', '/add-link'))}

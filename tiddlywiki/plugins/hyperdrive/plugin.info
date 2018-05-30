@@ -1,0 +1,6 @@
+{
+	"title": "$:/plugins/hyperdrive",
+	"description": "Sync adaptor for hyperdrive",
+	"author": "Jim Pick",
+	"core-version": ">=5.0.0"
+}

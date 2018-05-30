@@ -1,7 +1,7 @@
 {
-  "name": "Dat Shopping List",
-  "short_name": "Dat Shopping",
-  "description": "A demo of dat multiwriter support (hyperdrive+hyperdb) in a PWA",
+  "name": "Dat TiddlyWiki",
+  "short_name": "TiddlyWiki",
+  "description": "A demo of peer-to-peer TiddlyWiki",
   "lang": "en-US",
   "start_url": "/",
   "display": "standalone",
@@ -10,12 +10,12 @@
   "background_color": "#fff",
   "icons": [
     {
-      "src": "/img/dat-shopping-list-192.png",
+      "src": "/img/dat-tiddlywiki-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/img/dat-shopping-list-512.png",
+      "src": "/img/dat-tiddlywiki-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
