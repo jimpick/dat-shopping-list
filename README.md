@@ -1,10 +1,8 @@
 # dat-shopping-list-tokyo
 
-![Logo](https://dat-shopping-list-tokyo.glitch.me/img/dat-shopping-list-96.png)
+![Logo](https://dat-shopping-list.glitch.me/img/dat-shopping-list-96.png)
 
-[https://dat-shopping-list-tokyo.glitch.me/](https://dat-shopping-list-tokyo.glitch.me/)
-
-This is an version of [https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/) with updated dependencies that was presented at the [Distributed DATa Evening](https://georepublic.connpass.com/event/105079/) in Tokyo in November, 2018.
+[https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/)
 
 # Overview
 
