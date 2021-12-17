@@ -1,8 +1,10 @@
-# dat-shopping-list
+# dat-shopping-list-tokyo
 
-![Logo](https://dat-shopping-list.glitch.me/img/dat-shopping-list-96.png)
+![Logo](https://dat-shopping-list-tokyo.glitch.me/img/dat-shopping-list-96.png)
 
-[https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/)
+[https://dat-shopping-list-tokyo.glitch.me/](https://dat-shopping-list-tokyo.glitch.me/)
+
+This is an version of [https://dat-shopping-list.glitch.me/](https://dat-shopping-list.glitch.me/) with updated dependencies that was presented at the [Distributed DATa Evening](https://georepublic.connpass.com/event/105079/) in Tokyo in November, 2018.
 
 # Overview
 
@@ -34,9 +36,9 @@ There are many ways for you to run your own instance. You may want to run your o
 
 ## Glitch
 
-dat-shopping-list was developed on Glitch. Glitch is very nice. It is free, and it gives you a Node.js backend as well as an in-browser IDE with multi-user editing and debugging! Use the following link to fork your own copy of the Node.js gateway service and front-end user interface:
+dat-shopping-list-tokyo was developed on Glitch. Glitch is very nice. It is free, and it gives you a Node.js backend as well as an in-browser IDE with multi-user editing and debugging! Use the following link to fork your own copy of the Node.js gateway service and front-end user interface:
 
-[![Remix on Glitch](https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg)](https://glitch.com/edit/#!/remix/dat-shopping-list)
+[![Remix on Glitch](https://cdn.glitch.com/2703baf2-b643-4da7-ab91-7ee2a2d00b5b%2Fremix-button.svg)](https://glitch.com/edit/#!/remix/dat-shopping-list-tokyo)
 
 Note: Occasionally, Glitch gets into a state where it can't read from the disk. One way to get going again is to run: `rm -rf node_modules && npm install` on the console.
 

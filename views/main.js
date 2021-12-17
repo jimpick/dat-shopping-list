@@ -101,7 +101,7 @@ const prefix = css`
 module.exports = mainView
 
 function mainView (state, emit) {
-  emit('DOMTitleChange', 'Dat Shopping List')
+  emit('DOMTitleChange', 'Dat Shopping List 東京')
   const documents = state.documents.map(doc => {
     return html`
       <li onclick=${click} onkeydown=${keydown} tabindex="0" role="button">

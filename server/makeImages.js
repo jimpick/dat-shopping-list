@@ -13,8 +13,7 @@ function makeImages (cb) {
       return promise
         .then(() => {
           return sharp(`./static/img/${base}.svg`)
-            .resize(size, size)
-            .background('white')
+            .resize(size, size, { background: 'white' })
             .flatten()
             .toFile(`./.data/img/${base}-${size}.png`)
         })
