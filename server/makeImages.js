@@ -4,7 +4,7 @@ module.exports = makeImages
 
 function makeImages (cb) {
   console.log('Making images')
-  const base = 'dat-tiddlywiki'
+  const base = 'dat-shopping-list'
   const sizes = [16, 32, 96, 120, 152, 167, 180, 192, 196, 512]
 
   sizes.reduce(
@@ -13,8 +13,7 @@ function makeImages (cb) {
       return promise
         .then(() => {
           return sharp(`./static/img/${base}.svg`)
-            .resize(size, size)
-            .background('white')
+            .resize(size, size, { background: 'white' })
             .flatten()
             .toFile(`./.data/img/${base}-${size}.png`)
         })

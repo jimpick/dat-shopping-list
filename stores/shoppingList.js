@@ -1,7 +1,7 @@
 const rai = require('random-access-idb')
 const toBuffer = require('to-buffer')
 // const hyperdrive = require('hyperdrive')
-const hyperdrive = require('@jimpick/hyperdrive-hyperdb-backend')
+const hyperdrive = require('@jimpick/hyperdrive-next')
 const crypto = require('hypercore/lib/crypto')
 const newId = require('monotonic-timestamp-base36')
 const dumpWriters = require('../lib/dumpWriters')
@@ -24,7 +24,7 @@ function store (state, emitter) {
   emitter.on('navigate', updateDoc)
 
   emitter.on('addLink', link => {
-    const match = link.match(/([0-9a-fA-F]{64})\/?(tw)?\/?$/)
+    const match = link.match(/([0-9a-fA-F]{64})\/?$/)
     if (match) {
       const key = match[1]
       emitter.emit('pushState', `/doc/${key}`)
@@ -73,9 +73,7 @@ function store (state, emitter) {
         state.cancelGatewayReplication = connectToGateway(
           archive, updateSyncStatus, updateConnecting
         )
-        if (archive.db._writers[0].length() > 0) {
-          readShoppingList()
-        }
+        readShoppingList()
         archive.db.watch(() => {
           console.log('Archive updated:', archive.key.toString('hex'))
           dumpWriters(archive)

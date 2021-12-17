@@ -2,8 +2,6 @@ const thunky = require('thunky')
 
 module.exports = store
 
-const documentsDbName = 'tiddlywikis'
-
 function store (state, emitter) {
   state.documents = []
 
@@ -35,7 +33,7 @@ function store (state, emitter) {
 
   // Store documents in indexedDB
   function openDocumentsDB (cb) {
-    const request = window.indexedDB.open(documentsDbName, 1)
+    const request = window.indexedDB.open('documents', 2)
     request.onerror = function (event) {
       console.log('IndexedDB error')
     }
@@ -49,8 +47,10 @@ function store (state, emitter) {
       if (event.oldVersion === 0) {
         objectStore = db.createObjectStore('documents', {keyPath: 'key'})
         objectStore.createIndex('name', 'name')
-        objectStore.createIndex('dateAdded', 'dateAdded')
+      } else {
+        objectStore = event.target.transaction.objectStore('documents')
       }
+      objectStore.createIndex('dateAdded', 'dateAdded')
       objectStore.transaction.oncomplete = function (event) {
         console.log('Document db created')
       }

@@ -8,7 +8,6 @@ COPY lib ./lib
 COPY server ./server
 COPY static ./static
 COPY stores ./stores
-COPY tiddlywiki ./tiddlywiki
 COPY views ./views
 COPY package.json index.* ./
 

@@ -23,16 +23,72 @@ const prefix = css`
       margin: 1rem;
     }
 
-    .tiddlyButton {
-      display: flex;
-      height: 8rem;
-      align-items: center;
-      justify-content: center;
+    ul {
+      padding: 0 0.3rem 0.5rem 0.3rem;
+    }
 
-      button {
-        font-size: 1.2rem;
-        padding: 1.3rem;
+    li {
+      list-style-type: none;
+      border: 1px solid var(--color-neutral-20);
+      border-radius: 0.5rem;
+      margin: 0 0 0.5rem 0;
+      padding: 0 0.5rem;
+      min-height: 3rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-green);
       }
+
+      input[type="checkbox"] {
+        pointer-events: none;
+        margin: 0 0.4rem;
+      }
+
+      .text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0.5rem;
+      }
+
+      .text[data-bought="true"] {
+        text-decoration: line-through;
+      }
+
+      .delete {
+        opacity: 0.6;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--color-green);
+        flex: 0 0;
+        padding: 0.6rem 0.6rem;
+      }
+
+      &.addGroceryItem {
+        border-color: transparent;
+
+        form {
+          display: flex;
+          margin: 0 0 0 1.5rem;
+          width: 100%;
+
+          input[type="text"] {
+            font-size: 1.2rem;
+            flex: 1;
+            width: 100%;
+          }
+
+          input[type="submit"] {
+            margin-left: 0.6rem;
+          }
+        }
+      }
+
     }
 
     .bottomNav {
@@ -48,7 +104,7 @@ const prefix = css`
 module.exports = shoppingListView
 
 function shoppingListView (state, emit) {
-  emit('DOMTitleChange', 'Dat TiddlyWiki - ' + state.docTitle)
+  emit('DOMTitleChange', 'Dat Shopping List - ' + state.docTitle)
 
   function layout (inner) {
     return html`
@@ -78,20 +134,59 @@ function shoppingListView (state, emit) {
   }
   if (state.loading) return layout('Loading...')
 
+  const items = state.shoppingList
+    .sort((a, b) => a.dateAdded - b.dateAdded)
+    .map(item => {
+      const id = item.file.replace('.json', '')
+      return html`
+        <li tabindex="0" role="button" onclick=${toggle.bind(item)} onkeydown=${keydown}>
+          <input type="checkbox" checked=${item.bought} tabindex="-1" id=${id}>
+          <div class="text" data-bought=${item.bought}>${item.name}</div>
+          <div class="delete" onclick=${remove.bind(item)} tabindex="0">${raw('&#x00d7;')}</div>
+        </li>
+      `
+
+      function toggle () {
+        emit('toggleBought', this.file)
+      }
+
+      function remove (event) {
+        emit('remove', this.file)
+        event.stopPropagation()
+      }
+    })
+  const addItemInput = html`<input type="text">`
+  addItemInput.isSameNode = function (target) {
+    return (target && target.nodeName && target.nodeName === 'INPUT')
+  }
+
+  items.push(html`
+    <li class="addGroceryItem" id="addItem">
+      <form onsubmit=${submitAddItem}>
+        ${addItemInput}
+        ${button.submit('Add')}
+      </form>
+    </li>
+  `)
+  function submitAddItem (event) {
+    const input = event.target.querySelector('input')
+    const name = input.value.trim()
+    if (name !== '') emit('addItem', name)
+    input.value = ''
+    event.preventDefault()
+    event.target.scrollIntoView()
+  }
+  const noItems = state.shoppingList.length === 0 ? html`<p>No items.</p>` : null
   return layout(html`
     <div>
       ${shoppingListTitle(state, emit)}
       ${writeStatus(state, emit)}
-      <div class="tiddlyButton">
-        ${button.button('View TiddlyWiki', openTiddlyWiki)}
-      </div>
+      <ul>
+        ${items}
+      </ul>
+      ${noItems}
     </div>
   `)
-
-  function openTiddlyWiki (event) {
-    const url = `/doc/${state.key.toString('hex')}/tw`
-    location.href = url
-  }
 
   function deleteList (event) {
     const confirm = window.confirm('Delete this list?')
