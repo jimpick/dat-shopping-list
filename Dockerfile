@@ -1,4 +1,4 @@
-FROM node:carbon
+FROM node:latest
 
 # Copy files
 WORKDIR /usr/src/app
